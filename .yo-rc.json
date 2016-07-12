@@ -1,0 +1,17 @@
+{
+  "generator-plugin-wp": {
+    "name": "Wontrapi",
+    "homepage": "https://github.com/oakwoodgates/wontrapi",
+    "description": "A radical new plugin for WordPress!",
+    "version": "0.1.0",
+    "author": "WPGuru4u",
+    "authoremail": "wpguru4u@gmail.com",
+    "authorurl": "http://wpguru4u.com",
+    "license": "GPLv2",
+    "slug": "wontrapi",
+    "classname": "Wontrapi",
+    "classprefix": "Wontrapi_",
+    "prefix": "wontrapi",
+    "year": 2016
+  }
+}
