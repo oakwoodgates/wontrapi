@@ -140,9 +140,9 @@ final class Wontrapi {
 	 * @return void
 	 */
 	public function plugin_classes() {
-		// Attach other plugin classes to the base plugin class.
-		// $this->plugin_class = new Wontrapi_Plugin_Class( $this );
+		// Attach other plugin classes to the base plugin class.
 
+		$this->options = new Wontrapi_Options( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -263,6 +263,7 @@ final class Wontrapi {
 			case 'basename':
 			case 'url':
 			case 'path':
+			case 'options':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
