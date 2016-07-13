@@ -30,7 +30,7 @@ A radical new plugin for WordPress!
 ### 0.1.1 ###
 * CMB2
 * Basic options panel
-* Helper functions: `wontrapi_get_option` wrapper to get options
+* Helper functions: `wontrapi_get_option( 'option_key' )` wrapper to get options
 
 ### 0.1.0 ###
 * First release
