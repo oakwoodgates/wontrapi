@@ -140,8 +140,7 @@ final class Wontrapi {
 	 * @return void
 	 */
 	public function plugin_classes() {
-		// Attach other plugin classes to the base plugin class.
-
+		// Attach other plugin classes to the base plugin class.
 		$this->options = new Wontrapi_Options( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
@@ -186,6 +185,7 @@ final class Wontrapi {
 		if ( $this->check_requirements() ) {
 			load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
 			require( self::dir( 'vendor/CMB2/init.php' ) );
+			require( self::dir( 'functions.php' ) );
 			$this->plugin_classes();
 		}
 	}
