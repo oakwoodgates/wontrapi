@@ -142,6 +142,10 @@ final class Wontrapi {
 	public function plugin_classes() {
 		// Attach other plugin classes to the base plugin class.
 		$this->options = new Wontrapi_Options( $this );
+
+		require( self::dir( 'includes/class-master.php' ) );
+
+	//	$this->master = new Wontrapi_Master( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -264,6 +268,7 @@ final class Wontrapi {
 			case 'url':
 			case 'path':
 			case 'options':
+			case 'master':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
