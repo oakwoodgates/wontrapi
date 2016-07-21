@@ -12,14 +12,14 @@ namespace Wontrapi;
  */
 class Master {
 	/**
-	 * [$app_id description]
-	 * @var [type]
+	 * App ID from Ontraport
+	 * @var string
 	 * @since 0.1.2
 	 */
 	protected $app_id;
 	/**
-	 * [$app_key description]
-	 * @var [type]
+	 * API Key from Ontraport
+	 * @var string
 	 * @since 0.1.2
 	 */
 	protected $app_key;
@@ -30,14 +30,14 @@ class Master {
 	 */
 	protected $endpoint;
 	/**
-	 * [$version description]
-	 * @var [type]
+	 * Ontraport API version
+	 * @var integer
 	 * @since 0.1.2
 	 */
 	protected $version;
 	/**
-	 * [$namespace description]
-	 * @var [type]
+	 * Namespace
+	 * @var string
 	 * @since 0.1.2
 	 */
 	protected $namespace;
@@ -248,5 +248,3 @@ class Master {
 		}
 	}
 }
-
-
