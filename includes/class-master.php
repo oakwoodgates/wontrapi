@@ -161,28 +161,28 @@ class Master {
 	 * @since 0.1.2
 	 */
 	protected function default_endpoints () {
-		$url = 'https://api.ontraport.com/' . $this->version;
+		$url = 'https://api.ontraport.com/' . $this->version . '/';
 		$this->set_endpoint ( array (
-			'object' 							=> $url . '/object',
-			'objects' 							=> $url . '/objects',
-			'objects_meta' 						=> $url . '/objects/meta',
-			'objects_tag' 						=> $url . '/objects/tag',
-			'form' 								=> $url . '/form',
-			'message' 							=> $url . '/message',
-			'task_cancel' 						=> $url . '/task/cancel',
-			'task_complete' 					=> $url . '/task/complete',
-			'transaction_processmanual' 		=> $url . '/transaction/processManual',
-			'transaction_refund' 				=> $url . '/transaction/refund',
-			'transaction_converttodecline' 		=> $url . '/transaction/convertToDecline',
-			'transaction_converttocollections' 	=> $url . '/transaction/convertToCollections',
-			'transaction_void' 					=> $url . '/transaction/void',
-			'transaction_voidpurchase' 			=> $url . '/transaction/voidPurchase',
-			'transaction_reruncommission' 		=> $url . '/transaction/rerunCommission',
-			'transaction_markpaid' 				=> $url . '/transaction/markPaid',
-			'transaction_rerun' 				=> $url . '/transaction/rerun',
-			'transaction_writeoff' 				=> $url . '/transaction/writeOff',
-			'transaction_order' 				=> $url . '/transaction/order',
-			'transaction_resendinvoice' 		=> $url . '/transaction/resendInvoice'
+			'object' 							=> $url . 'object',
+			'objects' 							=> $url . 'objects',
+			'objects_meta' 						=> $url . 'objects/meta',
+			'objects_tag' 						=> $url . 'objects/tag',
+			'form' 								=> $url . 'form',
+			'message' 							=> $url . 'message',
+			'task_cancel' 						=> $url . 'task/cancel',
+			'task_complete' 					=> $url . 'task/complete',
+			'transaction_processmanual' 		=> $url . 'transaction/processManual',
+			'transaction_refund' 				=> $url . 'transaction/refund',
+			'transaction_converttodecline' 		=> $url . 'transaction/convertToDecline',
+			'transaction_converttocollections' 	=> $url . 'transaction/convertToCollections',
+			'transaction_void' 					=> $url . 'transaction/void',
+			'transaction_voidpurchase' 			=> $url . 'transaction/voidPurchase',
+			'transaction_reruncommission' 		=> $url . 'transaction/rerunCommission',
+			'transaction_markpaid' 				=> $url . 'transaction/markPaid',
+			'transaction_rerun' 				=> $url . 'transaction/rerun',
+			'transaction_writeoff' 				=> $url . 'transaction/writeOff',
+			'transaction_order' 				=> $url . 'transaction/order',
+			'transaction_resendinvoice' 		=> $url . 'transaction/resendInvoice'
 		) );
 	}
 
