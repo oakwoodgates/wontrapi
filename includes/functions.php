@@ -12,5 +12,10 @@
  * @return mixed      [description]
  */
 function wontrapi_get_option( $key = '' ) {
-	return cmb2_get_option( 'wontrapi_options', $key );
+	if ( function_exists( 'cmb2_get_option' ) ) {
+		return cmb2_get_option( 'wontrapi_options', $key );
+	} else {
+		$options = get_option( 'wontrapi_options' );
+		return $options[$key];
+	}
 }
