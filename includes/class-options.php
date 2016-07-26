@@ -152,7 +152,7 @@ class Wontrapi_Options {
 		*/
 		$cmb->add_field( array(
 			'name'    => __( 'API ID', 'wontrapi' ),
-			'id'      => 'api_id', // no prefix needed
+			'id'      => 'api_appid', // no prefix needed
 			'type'    => 'text',
 		) );
 
