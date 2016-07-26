@@ -148,6 +148,7 @@ final class Wontrapi {
 		$this->master = new Wontrapi_Master( $this );
 
 		require( self::dir( 'includes/class-objects.php' ) );
+		require( self::dir( 'includes/extend-objects.php' ) );
 
 	} // END OF PLUGIN CLASSES FUNCTION
 
