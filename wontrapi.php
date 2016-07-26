@@ -141,11 +141,14 @@ final class Wontrapi {
 	 */
 	public function plugin_classes() {
 		// Attach other plugin classes to the base plugin class.
+
+		require( self::dir( 'includes/functions.php' ) );
+
 		$this->options = new Wontrapi_Options( $this );
+		$this->master = new Wontrapi_Master( $this );
 
-		require( self::dir( 'includes/class-master.php' ) );
+		require( self::dir( 'includes/class-objects.php' ) );
 
-	//	$this->master = new Wontrapi_Master( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -155,7 +158,7 @@ final class Wontrapi {
 	 * @return void
 	 */
 	public function hooks() {
-
+		require( self::dir( 'vendor/CMB2/init.php' ) );
 		add_action( 'init', array( $this, 'init' ) );
 	}
 
@@ -188,8 +191,6 @@ final class Wontrapi {
 	public function init() {
 		if ( $this->check_requirements() ) {
 			load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
-			require( self::dir( 'vendor/CMB2/init.php' ) );
-			require( self::dir( 'functions.php' ) );
 			$this->plugin_classes();
 		}
 	}
@@ -269,6 +270,7 @@ final class Wontrapi {
 			case 'path':
 			case 'options':
 			case 'master':
+			case 'objects':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
@@ -333,3 +335,10 @@ add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
 
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wontrapi(), '_deactivate' ) );
+
+function wontrapi_master() {
+	return wontrapi()->master;
+}
+function wontrapi_contacts() {
+	return wontrapi_master()->Contacts;
+}
