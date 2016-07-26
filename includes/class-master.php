@@ -1,16 +1,10 @@
 <?php
-namespace Wontrapi;
 /**
- * Wontrapi\Master
- *
- * @since 0.1.2
- * @package Wontrapi
- */
-/**
- * class Master
+ * Wontrapi Master
  * @since 0.1.2
  */
-class Master {
+class Wontrapi_Master {
+	protected $plugin = null;
 	/**
 	 * App ID from Ontraport
 	 * @var string
@@ -30,56 +24,16 @@ class Master {
 	 */
 	protected $endpoint;
 	/**
-	 * Ontraport API version
-	 * @var integer
-	 * @since 0.1.2
-	 */
-	protected $version;
-	/**
-	 * Namespace
-	 * @var string
-	 * @since 0.1.2
-	 */
-	protected $namespace;
-	/**
 	 * [__construct description]
-	 * @param [type] $app_id  [description]
-	 * @param [type] $app_key [description]
+	 * @param [type] $plugin  [description]
 	 * @since 0.1.2
 	 */
-	public function __construct () {
-		$this->set_app_id ( wontrapi_get_option( 'app_id' ) );
-		$this->set_app_key ( wontrapi_get_option( 'app_key' ) );
-		$this->set_version ( 1 );
-		$this->set_namespace ( 'Wontrapi' );
+	public function __construct( $plugin ) {
+		$this->plugin = $plugin;
+		$wo = get_option( 'wontrapi_options' );
+		$this->app_id = $wo['api_appid'];
+		$this->app_key = $wo['api_key'];
 		$this->default_endpoints ();
-	}
-
-	/**
-	 * [set_version description]
-	 * @param [type] $v [description]
-	 * @since 0.1.2
-	 */
-	public function set_version ( $v ) {
-		$this->version = $v;
-	}
-
-	/**
-	 * [set_app_id description]
-	 * @param [type] $id [description]
-	 * @since 0.1.2
-	 */
-	public function set_app_id ( $id ) {
-		$this->app_id = $id;
-	}
-
-	/**
-	 * [set_app_key description]
-	 * @param [type] $key [description]
-	 * @since 0.1.2
-	 */
-	public function set_app_key ( $key ) {
-		$this->app_key = $key;
 	}
 
 	/**
@@ -99,69 +53,12 @@ class Master {
 	}
 
 	/**
-	 * [set_namespace description]
-	 * @param [type] $ns [description]
-	 * @since 0.1.2
-	 */
-	public function set_namespace ( $ns ) {
-		$this->namespace = $ns;
-	}
-
-	/**
-	 * [get_version description]
-	 * @return [type] [description]
-	 * @since 0.1.2
-	 */
-	public function get_version () {
-		return $this->version;
-	}
-
-	/**
-	 * [get_app_id description]
-	 * @return [type] [description]
-	 * @since 0.1.2
-	 */
-	public function get_app_id () {
-		return $this->app_id;
-	}
-
-	/**
-	 * [get_app_key description]
-	 * @return [type] [description]
-	 * @since 0.1.2
-	 */
-	public function get_app_key () {
-		return $this->app_key;
-	}
-
-	/**
-	 * [get_endpoint description]
-	 * @param  string $_id [description]
-	 * @return [type]      [description]
-	 * @since 0.1.2
-	 */
-	public function get_endpoint ( $_id = '' ) {
-		if ( $_id != '' && isset ( $this->endpoint [ $_id ] ) )
-			return $this->endpoint [ $_id ];
-		return $this->endpoint;
-	}
-
-	/**
-	 * [get_namespace description]
-	 * @return [type] [description]
-	 * @since 0.1.2
-	 */
-	public function get_namespace () {
-		return $this->namespace;
-	}
-
-	/**
 	 * [default_endpoints description]
 	 * @return [type] [description]
 	 * @since 0.1.2
 	 */
 	protected function default_endpoints () {
-		$url = 'https://api.ontraport.com/' . $this->version . '/';
+		$url = 'https://api.ontraport.com/1/';
 		$this->set_endpoint ( array (
 			'object' 							=> $url . 'object',
 			'objects' 							=> $url . 'objects',
@@ -197,8 +94,8 @@ class Master {
 	public function send_request ( $endpoint, $method, $parameters ) {
 		/* instantiate HTTP headers with authentication data from Ontraport */
 		$headers = array ();
-		array_push ( $headers, 'Api-Appid: ' . $this->app_id );
-		array_push ( $headers, 'Api-Key: ' . $this->app_key );
+		array_push ( $headers, 'Api-Appid:' . $this->app_id );
+		array_push ( $headers, 'Api-Key:' . $this->app_key );
 
 		/* istantiate querystring and postargs variables that will be used respectively in GET and POST/PUT requests */
 		$querystring = '';
@@ -241,8 +138,10 @@ class Master {
 	 */
 	public function __get ( $name ) {
 		try {
-			$name = $this->get_namespace () . '\\' . $name;
-			return new $name( $this );
+			$name = 'Wontrapi_' . $name;
+			if ( class_exists( $name ) ) {
+				return new $name( $this );
+			}
 		} catch ( Exception $e ) {
 			throw $e;
 		}
