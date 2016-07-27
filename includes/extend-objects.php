@@ -1,4 +1,8 @@
 <?php
+/**
+ * Classes to extend Wontrapi_Objects
+ * @since  0.1.3
+ */
 class Wontrapi_Contacts extends Wontrapi_Objects {
 	protected static $object_id = 0;
 

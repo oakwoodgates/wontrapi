@@ -27,6 +27,13 @@ A radical new plugin for WordPress!
 
 ## Changelog ##
 
+### 0.1.3 ###
+* Wontrapi_Objects class for basic helper functions (read, update, create, etc)
+* Extend Wontrapi_Objects for specific object types (contacts, products, etc). See `includes/extend-objects.php` for full list.
+
+### 0.1.2 ###
+* Master class to connect to OP
+
 ### 0.1.1 ###
 * CMB2
 * Basic options panel
