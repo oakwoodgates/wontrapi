@@ -271,7 +271,6 @@ final class Wontrapi {
 			case 'path':
 			case 'options':
 			case 'master':
-			case 'objects':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
