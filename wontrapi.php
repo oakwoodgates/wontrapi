@@ -141,14 +141,8 @@ final class Wontrapi {
 	 */
 	public function plugin_classes() {
 		// Attach other plugin classes to the base plugin class.
-
-		require( self::dir( 'includes/functions.php' ) );
-
 		$this->options = new Wontrapi_Options( $this );
-		$this->master = new Wontrapi_Master( $this );
-
-		require( self::dir( 'includes/class-objects.php' ) );
-		require( self::dir( 'includes/extend-objects.php' ) );
+		$this->objects = new Wontrapi_Objects( $this );
 
 	} // END OF PLUGIN CLASSES FUNCTION
 
@@ -160,6 +154,7 @@ final class Wontrapi {
 	 */
 	public function hooks() {
 		require( self::dir( 'vendor/CMB2/init.php' ) );
+		require( self::dir( 'includes/functions.php' ) );
 		add_action( 'init', array( $this, 'init' ) );
 	}
 
@@ -270,7 +265,7 @@ final class Wontrapi {
 			case 'url':
 			case 'path':
 			case 'options':
-			case 'master':
+			case 'objects':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
@@ -317,6 +312,86 @@ final class Wontrapi {
 		$url = $url ? $url : trailingslashit( plugin_dir_url( __FILE__ ) );
 		return $url . $path;
 	}
+
+	/*
+	$url = 'https://api.ontraport.com/1/' . $endpoint;
+
+	Possible $endpoint:
+		'object'
+		'objects'
+		'objects/getInfo'
+		'objects/meta'
+		'objects/saveorupdate'
+		'objects/tag'
+		'form'
+		'message'
+		'task/cancel'
+		'transaction/processManual'
+		'transaction/refund'
+		'transaction/convertToDecline'
+		'transaction/convertToCollections'
+		'transaction/void'
+		'transaction/voidPurchase'
+		'transaction/rerunCommission'
+		'transaction/markPaid'
+		'transaction/rerun'
+		'transaction/writeOff'
+		'transaction/order'
+		'transaction/resendInvoice'
+	*/
+	/**
+	 * [send_request description]
+	 * @param  string $endpoint   HTTP endpoint for the REST call
+	 * @param  string $method     HTTP verb to use
+	 * @param  array $parameters  HTTP request-body content
+	 * @return string             HTTP response-body content
+	 * @since 0.1.2
+	 */
+	public static function send_request ( $endpoint, $method, $parameters ) {
+		/* instantiate HTTP headers with authentication data from Ontraport */
+		$headers = array ();
+
+		$wo = get_option( 'wontrapi_options' );
+		$app_id = $wo['api_appid'];
+		$app_key = $wo['api_key'];
+
+		array_push ( $headers, 'Api-Appid:' . $app_id );
+		array_push ( $headers, 'Api-Key:' . $app_key );
+
+		/* istantiate querystring and postargs variables that will be used respectively in GET and POST/PUT requests */
+		$querystring = '';
+		$postargs = '';
+
+		/* which method will we be using? */
+		$method = strtoupper ( $method );
+		if ( $method == 'GET' ) {
+			/* we will use GET so let build the query string that we will append to the endpoint */
+			$querystring = '?' . http_build_query ( $parameters );
+		} else {
+			/* we will use POST or PUT so we set up the request-body postargs */
+			$postargs = http_build_query ( $parameters );
+		}
+
+		$url = 'https://api.ontraport.com/1/' . $endpoint;
+
+		/* Setting up the cURL object */
+		$session = curl_init ();
+		curl_setopt ( $session, CURLOPT_URL, $url . $querystring );
+		curl_setopt ( $session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt ( $session, CURLOPT_CUSTOMREQUEST, $method );
+		curl_setopt ( $session, CURLOPT_HTTPHEADER, $headers );
+		curl_setopt ( $session, CURLOPT_USERAGENT, 'LSPOAW/LSP Ontraport API Wrapper' );
+
+		if ( $method != 'GET' ) {
+			curl_setopt ( $session, CURLOPT_POSTFIELDS, $postargs );
+		}
+
+		/* Executing cURL call and return result */
+		$response = curl_exec ( $session );
+		curl_close ( $session );
+
+		return $response;
+	}
 }
 
 /**
@@ -335,10 +410,3 @@ add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
 
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wontrapi(), '_deactivate' ) );
-
-function wontrapi_master() {
-	return wontrapi()->master;
-}
-function wontrapi_contacts() {
-	return wontrapi_master()->Contacts;
-}
