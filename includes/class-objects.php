@@ -52,7 +52,7 @@ class Wontrapi_Objects {
 				$id = 63;
 				break;
 			default:
-				$id = 0;
+				$id = $type;
 				break;
 		}
 		$id = apply_filters( 'wontrapi_object_id', $id, $type );
@@ -164,6 +164,7 @@ class Wontrapi_Objects {
 		} else
 			return false;
 	}
+
 	/**
 	 * GET /objects/getInfo
 	 * @link( http://api.ontraport.com/doc/#!/objects/getObjectsInfo, getObjectsInfo)
@@ -185,6 +186,7 @@ class Wontrapi_Objects {
 		return json_decode (  Wontrapi::send_request ( 'objects/saveorupdate', 'post', $params ) );
 
 	}
+
 	/**
 	 * DELETE /objects/tag
 	 * @link( http://api.ontraport.com/doc/#!/objects/removeTag, removeTag)
