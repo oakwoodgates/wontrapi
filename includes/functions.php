@@ -25,7 +25,9 @@ function wontrapi_objects() {
 }
 
 function wontrapi_get_object( $obj_type, $ontraport_id ) {
-	return wontrapi()->objects->get_object( $obj_type, $ontraport_id );
+	$op = wontrapi()->objects->get_object( $obj_type, $ontraport_id );
+	$return = ( ! empty( $op->data ) ) ? $op->data : '';
+	return $return;
 }
 
 function wontrapi_get_objects( $obj_type, $ontraport_ids = array(), $params = array() ) {
@@ -87,7 +89,7 @@ function wontrapi_get_contact_by_uid( $user_id ) {
 		// check that the contact actually exists in Ontraport
 		$maybe_contact = wontrapi_get_contact( $op_user_id );
 		// double check there is an Ontraport object id
-		if ( ! empty( $maybe_contact->data->id ) ) {
+		if ( ! empty( $maybe_contact->id ) ) {
 			// return the contact object from Ontraport
 			$contact = $maybe_contact;
 			return $contact;
@@ -116,9 +118,50 @@ function wontrapi_get_contact_by_uid( $user_id ) {
 }
 
 function wontrapi_update_or_create_object( $obj_type, $email, $params = array() ){
-	return wontrapi()->objects->update_or_create_object ( $obj_type, $email, $params );
+	return wontrapi()->objects->update_or_create_object( $obj_type, $email, $params );
 }
 
 function wontrapi_update_or_create_contact( $email, $params = array() ){
-	return wontrapi()->objects->update_or_create_object ( 'contacts', $email, $params );
+	return wontrapi()->objects->update_or_create_object( 'contacts', $email, $params );
+}
+
+function wontrapi_add_tags_to_objects( $obj_type, $ids, $tag_ids ) {
+	return wontrapi()->objects->add_tag_to( $obj_type, $ids, $tag_ids );
+}
+
+function wontrapi_add_tags_to_contacts( $ids, $tag_ids ) {
+	return wontrapi()->objects->add_tag_to( 'contacts', $ids, $tag_ids );
+}
+
+function wontrapi_add_sequence_to_contact( $op_id, $sequence_id ) {
+	$data = wontrapi_get_contact( $op_id );
+	$updateSequence = '';
+
+	if ( is_object( $data ) ) {
+		if ( ! empty( $data->updateSequence ) ) {
+			$new_updateSequence = $data->updateSequence . $sequence_id . '*/*';
+		} else {
+			$new_updateSequence = '*/*' . $sequence_id . '*/*';
+		}
+
+		$data->updateSequence = $new_updateSequence;
+		return wontrapi_update_contact( $data );
+	}
+	return '';
+//	return wontrapi()->objects->add_sequence_to( 'contacts', $ids, $tag_ids );
+}
+
+function wontrapi_object_get_field( $object, $field ) {
+	$value = '';
+	if ( is_object( $object ) ) {
+		if ( ! empty( $object->$field ) ) {
+			$value = $object->$field;
+			return $value;
+		}
+	}
+	return $value;
+}
+
+function wontrapi_update_contact( $object ) {
+	return wontrapi()->objects->update_object( 'contacts', $object );
 }
