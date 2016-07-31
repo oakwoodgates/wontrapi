@@ -161,8 +161,9 @@ class Wontrapi_Objects {
 		if ( isset ( $object [ 'id' ] ) ) {
 			$params = array_merge ( $params, $object );
 			return json_decode (  Wontrapi::send_request ( 'objects', 'put', $params ) );
-		} else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -194,7 +195,7 @@ class Wontrapi_Objects {
 	public function remove_tag_from ( $obj_type, $ids, $tag_ids ) {
 		$params = array (
 			'objectID' => self::object_id( $obj_type ),
-			'remove_list' => implode ( ',', $tag_id ),
+			'remove_list' => implode ( ',', $tag_ids ),
 			'ids' => implode ( ',', $ids )
 		);
 
@@ -208,7 +209,7 @@ class Wontrapi_Objects {
 	public function add_tag_to ( $obj_type, $ids, $tag_ids ) {
 		$params = array (
 			'objectID' => self::object_id( $obj_type ),
-			'add_list' => implode ( ',', $tag_id ),
+			'add_list' => implode ( ',', $tag_ids ),
 			'ids' => implode ( ',', $ids )
 		);
 
