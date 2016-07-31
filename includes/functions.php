@@ -24,33 +24,33 @@ function wontrapi_objects() {
 	return wontrapi()->objects;
 }
 
-function wontrapi_get_object( $type, $ontraport_id ) {
-	return wontrapi()->objects->get_object( $type, $ontraport_id );
+function wontrapi_get_object( $obj_type, $ontraport_id ) {
+	return wontrapi()->objects->get_object( $obj_type, $ontraport_id );
 }
 
-function wontrapi_get_objects( $type, $ontraport_ids = array(), $params = array() ) {
-	return wontrapi()->objects->get_objects( $type, $ontraport_ids, $params );
+function wontrapi_get_objects( $obj_type, $ontraport_ids = array(), $params = array() ) {
+	return wontrapi()->objects->get_objects( $obj_type, $ontraport_ids, $params );
 }
 /**
  * Get a list of objects from Ontraport.
  * example: 'Contacts', 'state', '=', 'NY'
  *
- * @param  string $type 	Type of object from Ontraport
+ * @param  string $obj_type 	Type of object from Ontraport
  * @param  string $field 	A contact field from Ontraport
  * @param  string $op    	Operator (ex: =,<,>)
  * @param  mixed  $value 	Value of $field to compare
  * @return [type]        [description]
  */
-function wontrapi_get_objects_by( $type, $field, $value, $op = '=', $params = array() ) {
-	return wontrapi()->objects->get_objects_by_condition( $type, $field, $value, $op, $type = 'auto', $params );
+function wontrapi_get_objects_by( $obj_type, $field, $value, $op = '=', $params = array() ) {
+	return wontrapi()->objects->get_objects_by_condition( $obj_type, $field, $value, $op, 'auto', $params );
 }
 
 function wontrapi_get_contact( $ontraport_id ) {
 	return wontrapi_get_object( 'contacts', $ontraport_id );
 }
 
-function wontrapi_get_contacts( $ontraport_ids = array() ) {
-	return wontrapi_get_objects( 'contacts', $ontraport_ids );
+function wontrapi_get_contacts( $ontraport_ids = array(), $params = array() ) {
+	return wontrapi_get_objects( 'contacts', $ontraport_ids, $params );
 }
 /**
  * Get list of contacts from Ontraport by $field $op $value
@@ -62,7 +62,7 @@ function wontrapi_get_contacts( $ontraport_ids = array() ) {
  * @return [type]        [description]
  */
 function wontrapi_get_contacts_by( $field, $value, $op = '=', $params = array() ) {
-	return wontrapi()->objects->get_objects_by_condition( 'contacts', $field, $value, $op, $type = 'auto', $params );
+	return wontrapi()->objects->get_objects_by_condition( 'contacts', $field, $value, $op, 'auto', $params );
 }
 
 /**
@@ -87,7 +87,7 @@ function wontrapi_get_contact_by_uid( $user_id ) {
 		// check that the contact actually exists in Ontraport
 		$maybe_contact = wontrapi_get_contact( $op_user_id );
 		// double check there is an Ontraport object id
-		if ( $maybe_contact->data->id ) {
+		if ( ! empty( $maybe_contact->data->id ) ) {
 			// return the contact object from Ontraport
 			$contact = $maybe_contact;
 			return $contact;
@@ -101,7 +101,8 @@ function wontrapi_get_contact_by_uid( $user_id ) {
 	// find this email in Ontraport
 	$search = wontrapi_get_contacts_by( 'email', '=', $email );
 	// check for Ontraport object id
-	$op_user_id = $search->data[0]->id;
+	if ( ! empty( $search->data[0]->id ) )
+		$op_user_id = $search->data[0]->id;
 
 	if ( $op_user_id ) {
 		// add Ontraport object id to User meta so it's easier next time
