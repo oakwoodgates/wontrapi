@@ -1,24 +1,26 @@
 <?php
 /**
  * Plugin Name: Wontrapi
- * Plugin URI:  https://github.com/oakwoodgates/wontrapi
+ * Plugin URI:  https://wontrapi.com
  * Description: A radical new plugin for WordPress!
- * Version:     0.1.1
+ * Version:     0.3.0
  * Author:      WPGuru4u
- * Author URI:  http://wpguru4u.com
- * Donate link: https://github.com/oakwoodgates/wontrapi
+ * Author URI:  https://wpguru4u.com
+ * Donate link: https://wontrapi.com
  * License:     GPLv2
  * Text Domain: wontrapi
  * Domain Path: /languages
  *
- * @link https://github.com/oakwoodgates/wontrapi
+ * @link    https://wontrapi.com
  *
  * @package Wontrapi
- * @version 0.1.1
+ * @version 0.3.0
+ *
+ * Built using generator-plugin-wp (https://github.com/WebDevStudios/generator-plugin-wp)
  */
 
 /**
- * Copyright (c) 2016 WPGuru4u (email : wpguru4u@gmail.com)
+ * Copyright (c) 2017 WPGuru4u (email : wpguru4u@gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 or, at
@@ -35,84 +37,96 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-/**
- * Built using generator-plugin-wp
- */
-
 
 /**
- * Autoloads files with classes when needed
+ * Autoloads files with classes when needed.
  *
- * @since  0.1.0
+ * @since  0.3.0
  * @param  string $class_name Name of the class being requested.
- * @return void
  */
 function wontrapi_autoload_classes( $class_name ) {
+
+	// If our class doesn't have our prefix, don't load it.
 	if ( 0 !== strpos( $class_name, 'Wontrapi_' ) ) {
 		return;
 	}
 
-	$filename = strtolower( str_replace(
-		'_', '-',
-		substr( $class_name, strlen( 'Wontrapi_' ) )
-	) );
+	// Set up our filename.
+	$filename = strtolower( str_replace( '_', '-', substr( $class_name, strlen( 'Wontrapi_' ) ) ) );
 
+	// Include our file.
 	Wontrapi::include_file( 'includes/class-' . $filename );
 }
 spl_autoload_register( 'wontrapi_autoload_classes' );
 
 /**
- * Main initiation class
+ * Main initiation class.
  *
- * @since  0.1.0
+ * @since  0.3.0
  */
 final class Wontrapi {
 
 	/**
-	 * Current version
+	 * Current version.
 	 *
-	 * @var  string
-	 * @since  0.1.0
+	 * @var    string
+	 * @since  0.3.0
 	 */
-	const VERSION = '0.1.1';
+	const VERSION = '0.3.0';
 
 	/**
-	 * URL of plugin directory
+	 * URL of plugin directory.
 	 *
-	 * @var string
-	 * @since  0.1.0
+	 * @var    string
+	 * @since  0.3.0
 	 */
 	protected $url = '';
 
 	/**
-	 * Path of plugin directory
+	 * Path of plugin directory.
 	 *
-	 * @var string
-	 * @since  0.1.0
+	 * @var    string
+	 * @since  0.3.0
 	 */
 	protected $path = '';
 
 	/**
-	 * Plugin basename
+	 * Plugin basename.
 	 *
-	 * @var string
-	 * @since  0.1.0
+	 * @var    string
+	 * @since  0.3.0
 	 */
 	protected $basename = '';
 
 	/**
-	 * Singleton instance of plugin
+	 * Detailed activation error messages.
 	 *
-	 * @var Wontrapi
-	 * @since  0.1.0
+	 * @var    array
+	 * @since  0.3.0
+	 */
+	protected $activation_errors = array();
+
+	/**
+	 * Singleton instance of plugin.
+	 *
+	 * @var    Wontrapi
+	 * @since  0.3.0
 	 */
 	protected static $single_instance = null;
 
 	/**
+	 * Instance of Wontrapi_Options
+	 *
+	 * @since0.3.0
+	 * @var Wontrapi_Options
+	 */
+	protected $options;
+
+	/**
 	 * Creates or returns an instance of this class.
 	 *
-	 * @since  0.1.0
-	 * @return Wontrapi A single instance of this class.
+	 * @since   0.3.0
+	 * @return  Wontrapi A single instance of this class.
 	 */
 	public static function get_instance() {
 		if ( null === self::$single_instance ) {
@@ -123,9 +137,9 @@ final class Wontrapi {
 	}
 
 	/**
-	 * Sets up our plugin
+	 * Sets up our plugin.
 	 *
-	 * @since  0.1.0
+	 * @since  0.3.0
 	 */
 	protected function __construct() {
 		$this->basename = plugin_basename( __FILE__ );
@@ -136,126 +150,158 @@ final class Wontrapi {
 	/**
 	 * Attach other plugin classes to the base plugin class.
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function plugin_classes() {
-		// Attach other plugin classes to the base plugin class.
-		$this->options = new Wontrapi_Options( $this );
-		$this->objects = new Wontrapi_Objects( $this );
 
+		$this->options = new Wontrapi_Options( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
-	 * Add hooks and filters
+	 * Add hooks and filters.
+	 * Priority needs to be
+	 * < 10 for CPT_Core,
+	 * < 5 for Taxonomy_Core,
+	 * and 0 for Widgets because widgets_init runs at init priority 1.
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function hooks() {
-		require( self::dir( 'vendor/CMB2/init.php' ) );
-		require( self::dir( 'includes/functions.php' ) );
-		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'init' ), 0 );
 	}
 
 	/**
-	 * Activate the plugin
+	 * Activate the plugin.
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function _activate() {
+		// Bail early if requirements aren't met.
+		if ( ! $this->check_requirements() ) {
+			return;
+		}
+
 		// Make sure any rewrite functionality has been loaded.
 		flush_rewrite_rules();
 	}
 
 	/**
-	 * Deactivate the plugin
-	 * Uninstall routines should be in uninstall.php
+	 * Deactivate the plugin.
+	 * Uninstall routines should be in uninstall.php.
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
-	public function _deactivate() {}
+	public function _deactivate() {
+		// Add deactivation cleanup functionality here.
+	}
 
 	/**
 	 * Init hooks
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function init() {
-		if ( $this->check_requirements() ) {
-			load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
-			$this->plugin_classes();
+
+		// Bail early if requirements aren't met.
+		if ( ! $this->check_requirements() ) {
+			return;
 		}
+
+		// Load translated strings for plugin.
+		load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
+
+		// Initialize plugin classes.
+		$this->plugin_classes();
 	}
 
 	/**
 	 * Check if the plugin meets requirements and
 	 * disable it if they are not present.
 	 *
-	 * @since  0.1.0
-	 * @return boolean result of meets_requirements
+	 * @since  0.3.0
+	 *
+	 * @return boolean True if requirements met, false if not.
 	 */
 	public function check_requirements() {
-		if ( ! $this->meets_requirements() ) {
 
-			// Add a dashboard notice.
-			add_action( 'all_admin_notices', array( $this, 'requirements_not_met_notice' ) );
-
-			// Deactivate our plugin.
-			add_action( 'admin_init', array( $this, 'deactivate_me' ) );
-
-			return false;
+		// Bail early if plugin meets requirements.
+		if ( $this->meets_requirements() ) {
+			return true;
 		}
 
-		return true;
+		// Add a dashboard notice.
+		add_action( 'all_admin_notices', array( $this, 'requirements_not_met_notice' ) );
+
+		// Deactivate our plugin.
+		add_action( 'admin_init', array( $this, 'deactivate_me' ) );
+
+		// Didn't meet the requirements.
+		return false;
 	}
 
 	/**
 	 * Deactivates this plugin, hook this function on admin_init.
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function deactivate_me() {
-		deactivate_plugins( $this->basename );
+
+		// We do a check for deactivate_plugins before calling it, to protect
+		// any developers from accidentally calling it too early and breaking things.
+		if ( function_exists( 'deactivate_plugins' ) ) {
+			deactivate_plugins( $this->basename );
+		}
 	}
 
 	/**
-	 * Check that all plugin requirements are met
+	 * Check that all plugin requirements are met.
 	 *
-	 * @since  0.1.0
+	 * @since  0.3.0
+	 *
 	 * @return boolean True if requirements are met.
 	 */
 	public function meets_requirements() {
-		// Do checks for required classes / functions
-		// function_exists('') & class_exists('').
-		// We have met all requirements.
+
+		// Do checks for required classes / functions or similar.
+		// Add detailed messages to $this->activation_errors array.
 		return true;
 	}
 
 	/**
-	 * Adds a notice to the dashboard if the plugin requirements are not met
+	 * Adds a notice to the dashboard if the plugin requirements are not met.
 	 *
-	 * @since  0.1.0
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function requirements_not_met_notice() {
-		// Output our error.
-		echo '<div id="message" class="error">';
-		echo '<p>' . sprintf( __( 'Wontrapi is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.', 'wontrapi' ), admin_url( 'plugins.php' ) ) . '</p>';
-		echo '</div>';
+
+		// Compile default message.
+		$default_message = sprintf( __( 'Wontrapi is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.', 'wontrapi' ), admin_url( 'plugins.php' ) );
+
+		// Default details to null.
+		$details = null;
+
+		// Add details if any exist.
+		if ( $this->activation_errors && is_array( $this->activation_errors ) ) {
+			$details = '<small>' . implode( '</small><br /><small>', $this->activation_errors ) . '</small>';
+		}
+
+		// Output errors.
+		?>
+		<div id="message" class="error">
+			<p><?php echo wp_kses_post( $default_message ); ?></p>
+			<?php echo wp_kses_post( $details ); ?>
+		</div>
+		<?php
 	}
 
 	/**
 	 * Magic getter for our object.
 	 *
-	 * @since  0.1.0
-	 * @param string $field Field to get.
-	 * @throws Exception Throws an exception if the field is invalid.
-	 * @return mixed
+	 * @since  0.3.0
+	 *
+	 * @param  string $field Field to get.
+	 * @throws Exception     Throws an exception if the field is invalid.
+	 * @return mixed         Value of the field.
 	 */
 	public function __get( $field ) {
 		switch ( $field ) {
@@ -265,7 +311,6 @@ final class Wontrapi {
 			case 'url':
 			case 'path':
 			case 'options':
-			case 'objects':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
@@ -273,14 +318,15 @@ final class Wontrapi {
 	}
 
 	/**
-	 * Include a file from the includes directory
+	 * Include a file from the includes directory.
 	 *
-	 * @since  0.1.0
+	 * @since  0.3.0
+	 *
 	 * @param  string $filename Name of the file to be included.
-	 * @return bool   Result of include call.
+	 * @return boolean          Result of include call.
 	 */
 	public static function include_file( $filename ) {
-		$file = self::dir( $filename .'.php' );
+		$file = self::dir( $filename . '.php' );
 		if ( file_exists( $file ) ) {
 			return include_once( $file );
 		}
@@ -288,11 +334,12 @@ final class Wontrapi {
 	}
 
 	/**
-	 * This plugin's directory
+	 * This plugin's directory.
 	 *
-	 * @since  0.1.0
+	 * @since  0.3.0
+	 *
 	 * @param  string $path (optional) appended path.
-	 * @return string       Directory and path
+	 * @return string       Directory and path.
 	 */
 	public static function dir( $path = '' ) {
 		static $dir;
@@ -301,104 +348,25 @@ final class Wontrapi {
 	}
 
 	/**
-	 * This plugin's url
+	 * This plugin's url.
 	 *
-	 * @since  0.1.0
+	 * @since  0.3.0
+	 *
 	 * @param  string $path (optional) appended path.
-	 * @return string       URL and path
+	 * @return string       URL and path.
 	 */
 	public static function url( $path = '' ) {
 		static $url;
 		$url = $url ? $url : trailingslashit( plugin_dir_url( __FILE__ ) );
 		return $url . $path;
 	}
-
-	/*
-	$url = 'https://api.ontraport.com/1/' . $endpoint;
-
-	Possible $endpoint:
-		'object'
-		'objects'
-		'objects/getInfo'
-		'objects/meta'
-		'objects/saveorupdate'
-		'objects/tag'
-		'form'
-		'message'
-		'task/cancel'
-		'transaction/processManual'
-		'transaction/refund'
-		'transaction/convertToDecline'
-		'transaction/convertToCollections'
-		'transaction/void'
-		'transaction/voidPurchase'
-		'transaction/rerunCommission'
-		'transaction/markPaid'
-		'transaction/rerun'
-		'transaction/writeOff'
-		'transaction/order'
-		'transaction/resendInvoice'
-	*/
-	/**
-	 * [send_request description]
-	 * @param  string $endpoint   HTTP endpoint for the REST call
-	 * @param  string $method     HTTP verb to use
-	 * @param  array $parameters  HTTP request-body content
-	 * @return string             HTTP response-body content
-	 * @since 0.1.2
-	 */
-	public static function send_request ( $endpoint, $method, $parameters ) {
-		/* instantiate HTTP headers with authentication data from Ontraport */
-		$headers = array ();
-
-		$wo = get_option( 'wontrapi_options' );
-		$app_id = $wo['api_appid'];
-		$app_key = $wo['api_key'];
-
-		array_push ( $headers, 'Api-Appid:' . $app_id );
-		array_push ( $headers, 'Api-Key:' . $app_key );
-
-		/* istantiate querystring and postargs variables that will be used respectively in GET and POST/PUT requests */
-		$querystring = '';
-		$postargs = '';
-
-		/* which method will we be using? */
-		$method = strtoupper ( $method );
-		if ( $method == 'GET' ) {
-			/* we will use GET so let build the query string that we will append to the endpoint */
-			$querystring = '?' . http_build_query ( $parameters );
-		} else {
-			/* we will use POST or PUT so we set up the request-body postargs */
-			$postargs = http_build_query ( $parameters );
-		}
-
-		$url = 'https://api.ontraport.com/1/' . $endpoint;
-
-		/* Setting up the cURL object */
-		$session = curl_init ();
-		curl_setopt ( $session, CURLOPT_URL, $url . $querystring );
-		curl_setopt ( $session, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt ( $session, CURLOPT_CUSTOMREQUEST, $method );
-		curl_setopt ( $session, CURLOPT_HTTPHEADER, $headers );
-		curl_setopt ( $session, CURLOPT_USERAGENT, 'LSPOAW/LSP Ontraport API Wrapper' );
-
-		if ( $method != 'GET' ) {
-			curl_setopt ( $session, CURLOPT_POSTFIELDS, $postargs );
-		}
-
-		/* Executing cURL call and return result */
-		$response = curl_exec ( $session );
-		curl_close ( $session );
-
-		return $response;
-	}
 }
 
 /**
  * Grab the Wontrapi object and return it.
- * Wrapper for Wontrapi::get_instance()
+ * Wrapper for Wontrapi::get_instance().
  *
- * @since  0.1.0
+ * @since  0.3.0
  * @return Wontrapi  Singleton instance of plugin class.
  */
 function wontrapi() {
@@ -408,5 +376,6 @@ function wontrapi() {
 // Kick it off.
 add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
 
+// Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wontrapi(), '_deactivate' ) );

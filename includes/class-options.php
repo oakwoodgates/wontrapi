@@ -1,96 +1,101 @@
 <?php
 /**
- * Wontrapi Options
+ * Wontrapi Options.
  *
- * @since 0.1.1
+ * @since   0.3.0
  * @package Wontrapi
  */
+
+
 
 /**
  * Wontrapi Options class.
  *
- * @since 0.1.1
+ * @since 0.3.0
  */
 class Wontrapi_Options {
 	/**
-	 * Parent plugin class
+	 * Parent plugin class.
 	 *
-	 * @var    class
-	 * @since  0.1.1
+	 * @var    Wontrapi
+	 * @since  0.3.0
 	 */
 	protected $plugin = null;
 
 	/**
-	 * Option key, and option page slug
+	 * Option key, and option page slug.
 	 *
 	 * @var    string
-	 * @since  0.1.1
+	 * @since  0.3.0
 	 */
 	protected $key = 'wontrapi_options';
 
 	/**
-	 * Options page metabox id
+	 * Options page metabox ID.
 	 *
 	 * @var    string
-	 * @since  0.1.1
+	 * @since  0.3.0
 	 */
 	protected $metabox_id = 'wontrapi_options_metabox';
 
 	/**
-	 * Options Page title
+	 * Options Page title.
 	 *
 	 * @var    string
-	 * @since  0.1.1
+	 * @since  0.3.0
 	 */
 	protected $title = '';
 
 	/**
-	 * Options Page hook
+	 * Options Page hook.
+	 *
 	 * @var string
 	 */
 	protected $options_page = '';
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 *
-	 * @since  0.1.1
-	 * @param  object $plugin Main plugin object.
-	 * @return void
+	 * @since  0.3.0
+	 *
+	 * @param  Wontrapi $plugin Main plugin object.
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
 		$this->hooks();
 
-		$this->title = __( 'Wontrapi Options', 'wontrapi' );
+		// Set our title.
+		$this->title = esc_attr__( 'Wontrapi Options', 'wontrapi' );
 	}
 
 	/**
-	 * Initiate our hooks
+	 * Initiate our hooks.
 	 *
-	 * @since  0.1.1
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function hooks() {
+
+		// Hook in our actions to the admin.
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'add_options_page' ) );
+		
 		add_action( 'cmb2_admin_init', array( $this, 'add_options_page_metabox' ) );
+		
 	}
 
 	/**
-	 * Register our setting to WP
+	 * Register our setting to WP.
 	 *
-	 * @since  0.1.1
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function admin_init() {
 		register_setting( $this->key, $this->key );
 	}
 
 	/**
-	 * Add menu options page
+	 * Add menu options page.
 	 *
-	 * @since  0.1.1
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function add_options_page() {
 		$this->options_page = add_menu_page(
@@ -106,10 +111,9 @@ class Wontrapi_Options {
 	}
 
 	/**
-	 * Admin page markup. Mostly handled by CMB2
+	 * Admin page markup. Mostly handled by CMB2.
 	 *
-	 * @since  0.1.1
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function admin_page_display() {
 		?>
@@ -123,11 +127,11 @@ class Wontrapi_Options {
 	/**
 	 * Add custom fields to the options page.
 	 *
-	 * @since  0.1.1
-	 * @return void
+	 * @since  0.3.0
 	 */
 	public function add_options_page_metabox() {
 
+		// Add our CMB2 metabox.
 		$cmb = new_cmb2_box( array(
 			'id'         => $this->metabox_id,
 			'hookup'     => false,
@@ -139,27 +143,14 @@ class Wontrapi_Options {
 			),
 		) );
 
-		/*
-		Add your fields here
-
+		// Add your fields here.
 		$cmb->add_field( array(
-			'name'    => __( 'Test Text', 'myprefix' ),
-			'desc'    => __( 'field description (optional)', 'myprefix' ),
-			'id'      => 'test_text', // no prefix needed
+			'name'    => __( 'Test Text', 'wontrapi' ),
+			'desc'    => __( 'field description (optional)', 'wontrapi' ),
+			'id'      => 'test_text', // No prefix needed.
 			'type'    => 'text',
-			'default' => __( 'Default Text', 'myprefix' ),
-		) );
-		*/
-		$cmb->add_field( array(
-			'name'    => __( 'API ID', 'wontrapi' ),
-			'id'      => 'api_appid', // no prefix needed
-			'type'    => 'text',
+			'default' => __( 'Default Text', 'wontrapi' ),
 		) );
 
-		$cmb->add_field( array(
-			'name'    => __( 'API Key', 'wontrapi' ),
-			'id'      => 'api_key', // no prefix needed
-			'type'    => 'text',
-		) );
 	}
 }

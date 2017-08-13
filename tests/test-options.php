@@ -1,17 +1,36 @@
 <?php
-
+/**
+ * Wontrapi Options Tests.
+ *
+ * @since   0.3.0
+ * @package Wontrapi
+ */
 class Wontrapi_Options_Test extends WP_UnitTestCase {
 
-	function test_sample() {
-		// replace this with some actual testing code
-		$this->assertTrue( true );
-	}
-
+	/**
+	 * Test if our class exists.
+	 *
+	 * @since  0.3.0
+	 */
 	function test_class_exists() {
 		$this->assertTrue( class_exists( 'Wontrapi_Options') );
 	}
 
+	/**
+	 * Test that we can access our class through our helper function.
+	 *
+	 * @since  0.3.0
+	 */
 	function test_class_access() {
-		$this->assertTrue( wontrapi()->options instanceof Wontrapi_Options );
+		$this->assertInstanceOf( 'Wontrapi_Options', wontrapi()->options );
+	}
+
+	/**
+	 * Replace this with some actual testing code.
+	 *
+	 * @since  0.3.0
+	 */
+	function test_sample() {
+		$this->assertTrue( true );
 	}
 }
