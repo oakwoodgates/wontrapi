@@ -115,12 +115,36 @@ final class Wontrapi {
 	protected static $single_instance = null;
 
 	/**
+	 * Ontraport App ID.
+	 *
+	 * @var    Wontrapi
+	 * @since  0.3.0
+	 */
+	protected $id;
+
+	/**
+	 * Ontraport App ID.
+	 *
+	 * @var    Wontrapi
+	 * @since  0.3.0
+	 */
+	protected $key;
+
+	/**
 	 * Instance of Wontrapi_Options
 	 *
 	 * @since0.3.0
 	 * @var Wontrapi_Options
 	 */
 	protected $options;
+
+	/**
+	 * Instance of Wontrapi_Go
+	 *
+	 * @since0.3.0
+	 * @var Wontrapi_Go
+	 */
+	protected $go;
 
 	/**
 	 * Creates or returns an instance of this class.
@@ -153,6 +177,7 @@ final class Wontrapi {
 	 * @since  0.3.0
 	 */
 	public function plugin_classes() {
+		$this->go = WontrapiGo::init( $this->id, $this->key );
 
 		$this->options = new Wontrapi_Options( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
@@ -210,6 +235,9 @@ final class Wontrapi {
 		// Load translated strings for plugin.
 		load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
 
+		// Setup OP
+		$this->ontraport_keys();
+		$this->include_dependencies();
 		// Initialize plugin classes.
 		$this->plugin_classes();
 	}
@@ -267,6 +295,17 @@ final class Wontrapi {
 		return true;
 	}
 
+	public function ontraport_keys() {
+		$data = get_option( 'wontrapi_options' );
+		$this->id  = $data['api_appid'];
+		$this->key = $data['api_key'];
+	}
+
+	public function include_dependencies() {
+		require( self::dir( 'vendor/cmb2/init.php' ) );
+		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );
+	}
+
 	/**
 	 * Adds a notice to the dashboard if the plugin requirements are not met.
 	 *
@@ -311,6 +350,7 @@ final class Wontrapi {
 			case 'url':
 			case 'path':
 			case 'options':
+			case 'go':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
@@ -371,6 +411,10 @@ final class Wontrapi {
  */
 function wontrapi() {
 	return Wontrapi::get_instance();
+}
+
+function wontrapiGo() {
+	return wontrapi()->go;
 }
 
 // Kick it off.
