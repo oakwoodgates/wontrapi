@@ -65,7 +65,7 @@ class Wontrapi_Options {
 		$this->hooks();
 
 		// Set our title.
-		$this->title = esc_attr__( 'Wontrapi Options', 'wontrapi' );
+		$this->title = esc_attr__( 'Wontrapi', 'wontrapi' );
 	}
 
 	/**
@@ -143,13 +143,16 @@ class Wontrapi_Options {
 			),
 		) );
 
-		// Add your fields here.
 		$cmb->add_field( array(
-			'name'    => __( 'Test Text', 'wontrapi' ),
-			'desc'    => __( 'field description (optional)', 'wontrapi' ),
-			'id'      => 'test_text', // No prefix needed.
+			'name'    => __( 'API ID', 'wontrapi' ),
+			'id'      => 'api_appid', 
 			'type'    => 'text',
-			'default' => __( 'Default Text', 'wontrapi' ),
+		) );
+
+		$cmb->add_field( array(
+			'name'    => __( 'API Key', 'wontrapi' ),
+			'id'      => 'api_key', 
+			'type'    => 'text',
 		) );
 
 	}
