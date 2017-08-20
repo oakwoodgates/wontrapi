@@ -155,5 +155,17 @@ class Wontrapi_Options {
 			'type'    => 'text',
 		) );
 
+		$cmb->add_field( array(
+			'name'    => __( 'Ping Key', 'wontrapi' ),
+			'id'      => 'ping_key', 
+			'type'    => 'text',
+		) );
+
+		$cmb->add_field( array(
+			'name'    => __( 'Ping Key value', 'wontrapi' ),
+			'id'      => 'ping_value', 
+			'type'    => 'text',
+		) );
+
 	}
 }
