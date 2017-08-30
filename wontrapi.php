@@ -240,6 +240,8 @@ final class Wontrapi {
 		$this->include_dependencies();
 		// Initialize plugin classes.
 		$this->plugin_classes();
+		require( self::dir( 'includes/functions.php' ) );
+		require( self::dir( 'includes/functions-actions.php' ) );
 	}
 
 	/**
@@ -304,6 +306,10 @@ final class Wontrapi {
 	public function include_dependencies() {
 		require( self::dir( 'vendor/cmb2/init.php' ) );
 		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );
+		// Init Freemius.
+		wontrapi_fs();
+		// Signal that SDK was initiated.
+		do_action( 'wontrapi_fs_loaded' );
 	}
 
 	/**
@@ -423,3 +429,29 @@ add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
 // Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wontrapi(), '_deactivate' ) );
+
+function wontrapi_fs() {
+	global $wontrapi_fs;
+
+	if ( ! isset( $wontrapi_fs ) ) {
+		// Include Freemius SDK.
+		require_once dirname(__FILE__) . '/vendor/freemius/start.php';
+
+		$wontrapi_fs = fs_dynamic_init( array(
+			'id' 				=> '1284',
+			'slug' 				=> 'wontrapi',
+			'type' 				=> 'plugin',
+			'public_key' 		=> 'pk_f3f99e224cd062ba9d7fda46ab973',
+			'is_premium' 		=> false,
+			'has_addons'		=> false,
+			'has_paid_plans'	=> false,
+			'is_org_compliant'	=> false,
+			'menu' 				=> array( 
+				'slug' 		=> 'wontrapi_options',
+				'support' 	=> false,
+			),
+		) );
+	}
+
+	return $wontrapi_fs;
+}
