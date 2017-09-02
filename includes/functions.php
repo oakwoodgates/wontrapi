@@ -17,7 +17,6 @@
  * @return mixed      [description]
  */
 
-
 function wontrapi_get_option( $key = '' ) {
 	if ( function_exists( 'cmb2_get_option' ) ) {
 		return cmb2_get_option( 'wontrapi_options', $key );
@@ -28,21 +27,20 @@ function wontrapi_get_option( $key = '' ) {
 }
 
 function wontrapi_get_opuid( $user_id ) {
-	return get_user_meta( $user_id, 'wontrapi_contact_id', true );
+	return get_user_meta( $user_id, 'won_cid', true );
 }
 
 function wontrapi_update_opuid( $user_id, $opuid ) {
-	return update_user_meta( $user_id, 'wontrapi_contact_id', $opuid );
+	return update_user_meta( $user_id, 'won_cid', $opuid );
 }
 
 function wontrapi_get_website_subscriber_id( $user_id ) {
-	return get_user_meta( $user_id, 'wontrapi_website_subscriber_id', true );
+	return get_user_meta( $user_id, 'won_wsid', true );
 }
 
 function wontrapi_update_website_subscriber_id( $user_id, $ws_id ) {
-	return update_user_meta( $user_id, 'wontrapi_website_subscriber_id', $ws_id );
+	return update_user_meta( $user_id, 'won_wsid', $ws_id );
 }
-
 
 function wontrapi_op__get_contact_by_contact_id( $contact_id ) {
 	return WontrapiGo::get_contact( $contact_id );
@@ -57,10 +55,11 @@ function wontrapi_op__get_contact_id_by_wp_email( $email ) {
 	return WontrapiHelp::get_id_from_response( $contact );
 }
 
+function wontrapi_get_contact_id_by_user_id( $user_id, $create = false ) {
 
-function wontrapi_get_contact_id_by_user_id( $user_id, $create = true ) {
 	// first, check wp database
 	$opuid = wontrapi_get_opuid( $user_id );
+
 	if ( $opuid ) {
 		return $opuid;
 	} else {
@@ -68,10 +67,13 @@ function wontrapi_get_contact_id_by_user_id( $user_id, $create = true ) {
 		$opuid = wontrapi_op__get_contact_id_by_wp_email( $user->user_email );
 	}
 	if ( $opuid ) {
+		wontrapi_update_opuid( $user_id, $opuid );
 		return $opuid;
 	} elseif ( $create ) {
 		$opuid = wontrapi_op__add_or_update_contact( $user_id, $user->user_email );
+		wontrapi_update_opuid( $user_id, $opuid );
 	}
+
 	return $opuid;
 
 //	return WontrapiGo::get_contact( $opuid );
@@ -84,14 +86,14 @@ function wontrapi_op__add_or_update_contact( $user_id, $email, $args = array() )
 	return $opuid;
 }
 
-
-
 function wontrapi_op__tag_contact( $user_id, $tag_ids, $args = array() ) {
-	return WontrapiGo::add_tag_to_contact( $user_id, $tag_ids, $args );
+	$contact_id = wontrapi_get_contact_id_by_user_id( $user_id );
+	return WontrapiGo::add_tag_to_contact( $contact_id, $tag_ids, $args );
 }
 
 function wontrapi_op__untag_contact( $user_id, $tag_ids, $args = array() ) {
-	return WontrapiGo::remove_tag_from_contact( $user_ids, $tag_ids, $args );
+	$contact_id = wontrapi_get_contact_id_by_user_id( $user_id );
+	return WontrapiGo::remove_tag_from_contact( $contact_id, $tag_ids, $args );
 }
 
 function wontrapi_listen() {
@@ -111,11 +113,10 @@ function wontrapi_listen() {
 }
 add_action( 'init', 'wontrapi_listen' );
 
-
 function wontrapi_user(){
-	$p = 'wontrapi_';
+	$p = 'won_';
 	$cmb = new_cmb2_box( array(
-		'id'               => $prefix . 'edit',
+		'id'               => $p . 'edit',
 		'title'            => __( 'User Profile Metabox', 'wontrapi' ), // Doesn't output for user boxes
 		'object_types'     => array( 'user' ), // Tells CMB2 to use user_meta vs post_meta
 		'show_names'       => true,
@@ -123,15 +124,16 @@ function wontrapi_user(){
 	) );
 
 	$cmb->add_field( array(
-		'name'    => 'Contact ID',
-		'id'      => $p . 'contact_id',
+		'name'    => 'Ontraport Contact ID',
+		'id'      => $p . 'cid',
 		'type'    => 'text',
 	) );
-
+/*
 	$cmb->add_field( array(
 		'name'    => 'Website Subscriber ID',
-		'id'      => $p . 'website_subscriber_id',
+		'id'      => $p . 'wsid',
 		'type'    => 'text',
 	) );
+*/
 }
 add_action( 'cmb2_admin_init', 'wontrapi_user' );
