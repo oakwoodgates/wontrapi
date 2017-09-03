@@ -79,6 +79,21 @@ function wontrapi_get_contact_id_by_user_id( $user_id, $create = false ) {
 //	return WontrapiGo::get_contact( $opuid );
 }
 
+function wontrapi_get_contact_by_user_id( $user_id, $create = false ) {
+	// first, check wp database
+	$contact_id = wontrapi_get_opuid( $user_id );
+
+	if ( $contact_id ) {
+		$contact = WontrapiGo::get_contact($contact_id);
+	} else {
+		$contact = WontrapiGo::get_contact_by_email($user->user_email);
+		$contact_id = WontrapiHelp::get_id_from_response($contact);
+		if ($contact_id)
+			wontrapi_update_opuid( $user_id, $contact_id );
+	}
+	return WontrapiHelp::get_object_from_response($contact);
+}
+
 function wontrapi_op__add_or_update_contact( $user_id, $email, $args = array() ) {
 	$response = WontrapiGo::create_or_update_contact( $email, $args );
 	$opuid = WontrapiHelp::get_id_from_response( $response );
