@@ -101,9 +101,19 @@ function wontrapi_op__add_or_update_contact( $user_id, $email, $args = array() )
 	return $opuid;
 }
 
+function wontrapi_op__add_or_update_contact1( $email, $args = array() ) {
+	$response = WontrapiGo::create_or_update_contact( $email, $args );
+	$opuid = WontrapiHelp::get_id_from_response( $response );
+	return $opuid;
+}
+
 function wontrapi_op__tag_contact( $user_id, $tag_ids, $args = array() ) {
 	$contact_id = wontrapi_get_contact_id_by_user_id( $user_id );
 	return WontrapiGo::add_tag_to_contact( $contact_id, $tag_ids, $args );
+}
+
+function wontrapi_add_tags_to_contacts( $op_id, $tags ) {
+	return WontrapiGo::add_tag_to_contact( $contact_id, $tag_ids );
 }
 
 function wontrapi_op__untag_contact( $user_id, $tag_ids, $args = array() ) {
