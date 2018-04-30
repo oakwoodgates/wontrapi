@@ -113,7 +113,7 @@ function wontrapi_op__tag_contact( $user_id, $tag_ids, $args = array() ) {
 }
 
 function wontrapi_add_tags_to_contacts( $op_id, $tags ) {
-	return WontrapiGo::add_tag_to_contact( $contact_id, $tag_ids );
+	return WontrapiGo::add_tag_to_contact( $op_id, $tags );
 }
 
 function wontrapi_op__untag_contact( $user_id, $tag_ids, $args = array() ) {
