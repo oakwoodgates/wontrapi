@@ -3,23 +3,26 @@
 namespace OntraportAPI;
 
 /**
- * Class LandingPages
+ * Class CreditCards
  *
  * @author ONTRAPORT
  *
  * @package OntraportAPI
  */
-class LandingPages extends BaseApi
+class CreditCards extends BaseApi
 {
     /**
-     * $var string endpoint for single landing page
+     * $var string endpoint for single credit card
      */
-    protected $_endpoint = "LandingPage";
+    protected $_endpoint = "CreditCard";
 
     /**
-     * $var string endpoint for plural landing page
+     * $var string endpoint for plural forms
      */
-    protected $_endpointPlural = "LandingPages";
+    protected $_endpointPlural = "CreditCards";
+
+    // Credit card-specific function endpoints
+    const DEFAULT_CARD = "default";
 
     /**
      * @param Ontraport $client
@@ -29,16 +32,8 @@ class LandingPages extends BaseApi
         parent::__construct($client);
     }
 
-    /*
-     * @TODO This is a placeholder, API needs to be revised to follow one standard for endpoint naming
-     */
-    private $_mainLandingPageEndpoint = "landingPage";
-
-    // Landing Page specific function endpoint
-    const HOSTED_URL = "getHostedURL";
-
     /**
-     * @brief Retrieve a single specified landing page
+     * @brief Retrieve a single specified credit card.
      *
      * @param mixed[] $requestParams The parameters to submit with GET request.
      *                               Possible array keys: "id" (required)
@@ -51,14 +46,14 @@ class LandingPages extends BaseApi
     }
 
     /**
-     * @brief Retrieve multiple landing pages according to specific criteria, handle pagination
+     * @brief Retrieve multiple credit cards according to specific criteria, handle pagination
      *
      * @param mixed[] $requestParams Array of parameters to submit with GET request. All parameters are optional but if "ids"
      *                               are not specified, all will be selected.
      *                               Possible array keys: "ids","start","range","sort","sortDir","condition","search",
      *                                                    "searchNotes","group_ids","performAll","externs","listFields"
      *
-     * @return string JSON formatted array of paginated response data: each page of data will be an element in that array
+     * @return string JSON formatted array of response data: each page of data will be an element in that array
      */
     public function retrieveMultiplePaginated($requestParams)
     {
@@ -66,7 +61,7 @@ class LandingPages extends BaseApi
     }
 
     /**
-     * @brief Retrieve multiple landing pages according to specific criteria
+     * @brief Retrieve multiple credit cards according to specific criteria
      *
      * @param mixed[] $requestParams Array of parameters to submit with GET request. All parameters are optional but if "ids"
      *                               are not specified, all will be selected.
@@ -81,7 +76,7 @@ class LandingPages extends BaseApi
     }
 
     /**
-     * @brief Retrieve information (such as number of landing pages) about landing page collection
+     * @brief Retrieve information (such as number of credit cards) about credit card collection
      *
      * @param mixed[] $requestParams Array of parameters to submit with GET request. All parameters are optional.
      *                               Possible array keys: "condition","search","searchNotes","group_ids","performAll"
@@ -94,9 +89,9 @@ class LandingPages extends BaseApi
     }
 
     /**
-     * @brief Retrieve meta for a landing page object
+     * @brief Retrieve meta for a credit card object
      *
-     * @return string JSON formatted meta for landing page object
+     * @return string JSON formatted response
      */
     public function retrieveMeta()
     {
@@ -104,16 +99,16 @@ class LandingPages extends BaseApi
     }
 
     /**
-     * @brief Retrieve the permanent URL for a landing page.
+     * @brief Set a specifed credit card as the default.
      *
-     * @param mixed[] $requestParams Array of parameters to submit with GET request.
+     * @param mixed[] $requestParams The parameters to submit with PUT request.
      *                               Possible array keys: "id" (required)
      *
      * @return string JSON formatted response
      */
-    public function getHostedURL($requestParams)
+    public function setDefault($requestParams)
     {
         $requiredParams = array("id");
-        return $this->client->request($requestParams, $this->_mainLandingPageEndpoint . "/" . self::HOSTED_URL, "get", $requiredParams, $options = NULL);
+        return $this->client->request($requestParams, $this->_endpoint . "/" . self::DEFAULT_CARD, "put", $requiredParams, $options = NULL);
     }
 }

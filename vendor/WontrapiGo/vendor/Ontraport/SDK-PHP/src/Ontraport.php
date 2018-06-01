@@ -14,12 +14,12 @@ require_once("APIAutoloader.php");
 class Ontraport
 {
     /**
-     * @var string the base url http requests are made to
+     * @var string the base URL HTTP requests are made to
      */
     const REQUEST_URL = "https://api.ontraport.com";
 
     /**
-     * @var int the api version number for this wrapper
+     * @var int the API version number for this wrapper
      */
     const API_VERSION = 1;
 
@@ -43,8 +43,8 @@ class Ontraport
      */
     protected $_customObjects = array();
 
-    /*
-     * @var HttpClient instance
+    /**
+     * @var CurlClient instance
      */
     protected $_httpClient = NULL;
 
@@ -54,10 +54,10 @@ class Ontraport
      * @param string $siteID
      * @param string $apiKey
      */
-    public function __construct($siteID,$apiKey)
+    public function __construct($siteID, $apiKey, $httpClient = null)
     {
         $this->setCredentials($apiKey, $siteID);
-        $this->setHttpClient();
+        $this->setHttpClient($httpClient);
     }
 
     /**
@@ -74,9 +74,14 @@ class Ontraport
     /**
      * @brief sets HTTP client
      */
-    public function setHttpClient()
+    public function setHttpClient($httpClient = null)
     {
-        $this->_httpClient = new CurlClient($this->_apiKey, $this->_siteID);
+        if ($httpClient === null)
+        {
+            $this->_httpClient = new CurlClient($this->_apiKey, $this->_siteID);
+            return;
+        }
+        $this->_httpClient = $httpClient;
     }
 
     /**
@@ -87,6 +92,17 @@ class Ontraport
         return $this->_httpClient;
     }
 
+    /**
+     * @brief Make an HTTP request
+     *
+     * @param $requestParams
+     * @param string $url
+     * @param string $method
+     * @param array $requiredParams
+     * @param array $options
+     *
+     * @return mixed
+     */
     public function request($requestParams, $url, $method, $requiredParams, $options)
     {
         $client = $this->getHttpClient();
@@ -94,6 +110,16 @@ class Ontraport
 
         return $client->httpRequest($requestParams, $url, $method, $requiredParams, $options);
     }
+
+    /**
+     * @brief gets the last HTTP status code received by the HTTP Client
+     *
+     * @return int
+     */
+     public function getLastStatusCode()
+     {
+         return $this->getHttpClient()->getLastStatusCode();
+     }
 
     /**
      * @brief constructs an api endpoint
@@ -105,16 +131,15 @@ class Ontraport
      */
     public function buildEndpoint($extendURL)
     {
-        $endpoint = self::REQUEST_URL . "/" . self::API_VERSION . "/" . $extendURL;
-        return $endpoint;
+        return self::REQUEST_URL . "/" . self::API_VERSION . "/" . $extendURL;
     }
 
     /**
      * @param integer $object
      *
-     * @throws \Exception
-     *
      * @return CustomObjects instance
+     *
+     * @throws Exceptions\CustomObjectException
      */
     public function custom($object)
     {
@@ -127,11 +152,15 @@ class Ontraport
         {
             return $this->getApi("CustomObjects", $object);
         }
+        throw new Exceptions\CustomObjectException();
+    }
 
-        else
-        {
-            throw new \Exception("Invalid object ID.");
-        }
+    /**
+     * @return CampaignBuilderItems
+     */
+    public function campaignbuilder()
+    {
+        return $this->getApi("CampaignBuilderItems");
     }
 
     /**
@@ -140,6 +169,14 @@ class Ontraport
     public function contact()
     {
         return $this->getApi("Contacts");
+    }
+
+    /**
+     * @return CreditCards
+     */
+    public function creditcard()
+    {
+        return $this->getApi("CreditCards");
     }
 
     /**
@@ -156,6 +193,14 @@ class Ontraport
     public function landingpage()
     {
         return $this->getApi("LandingPages");
+    }
+
+    /**
+     * @return Messages
+     */
+    public function message()
+    {
+        return $this->getApi("Messages");
     }
 
     /**
@@ -180,6 +225,14 @@ class Ontraport
     public function object()
     {
         return $this->getApi("Objects");
+    }
+
+    /**
+     * @return Webhooks
+     */
+    public function webhook()
+    {
+        return $this->getApi("Webhooks");
     }
 
     /**
@@ -215,6 +268,3 @@ class Ontraport
         return $this->_apiInstances[$class];
     }
 }
-
-
-

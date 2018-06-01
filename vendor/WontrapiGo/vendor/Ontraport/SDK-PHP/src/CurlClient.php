@@ -11,10 +11,25 @@ namespace OntraportAPI;
  */
 class CurlClient
 {
+    const HTTP_OK = 200;
+    const HTTP_BAD_REQUEST = 400;
+    const HTTP_UNAUTHORIZED = 401;
+    const HTTP_FORBIDDEN = 403;
+    const HTTP_NOT_FOUND = 404;
+    const HTTP_RATE_LIMIT = 429;
+    const HTTP_ERROR = 500;
+
+    const RATE_LIMIT_RESET = "x-rate-limit-reset";
+
     /**
      * @var array of headers sent with HTTP requests
      */
     private $_requestHeaders = array();
+
+    /**
+     * @var int the last HTTP status code received
+     */
+    private $_lastStatusCode = null;
 
     public function __construct($apiKey,$siteID)
     {
@@ -31,6 +46,16 @@ class CurlClient
     private function _setRequestHeader($header, $value)
     {
         $this->_requestHeaders[$header] = $header . ": " . $value;
+    }
+
+    /**
+     * @brief retrieves current request headers
+     *
+     * @return array
+     */
+    public function getRequestHeaders()
+    {
+        return $this->_requestHeaders;
     }
 
     /**
@@ -55,9 +80,11 @@ class CurlClient
      * @param array $requiredParams
      * @param int $method
      *
-     * @throws \Exception
-     *
      * @return boolean
+     *
+     * @throws Exceptions\HttpMethodException
+     * @throws Exceptions\RequiredParamsException
+     * @throws Exceptions\TypeException
      */
     private function _validateRequest($requestParams, $requiredParams, $method)
     {
@@ -65,19 +92,19 @@ class CurlClient
 
         if (!in_array($method, $allowedMethods))
         {
-            throw new \Exception($method . " is not a supported HTTP method.");
+            throw new Exceptions\HttpMethodException($method);
         }
 
         if ($requestParams && (!is_array($requestParams)))
         {
             $dataType = gettype($requestParams);
-            throw new \Exception("Invalid input: expected array, received $dataType");
+            throw new Exceptions\TypeException($dataType);
         }
 
         if ($missingParams = $this->_checkRequiredParams($requestParams, $requiredParams))
         {
             $missingParams = implode(",",$missingParams);
-            throw new \Exception("Invalid input: missing required parameter(s): $missingParams");
+            throw new Exceptions\RequiredParamsException($missingParams);
         }
 
         return true;
@@ -161,7 +188,7 @@ class CurlClient
         }
 
         $curlHandle = curl_init();
-
+        $headers = array();
         switch(strtolower($method))
         {
             case "post":
@@ -181,20 +208,86 @@ class CurlClient
 
             case "delete":
                 curl_setopt($curlHandle, CURLOPT_CUSTOMREQUEST, "DELETE");
-                $url = $url."?".$requestParams;
+                if (array_key_exists("Content-Type", $this->_requestHeaders) && $this->_requestHeaders["Content-Type"] == "Content-Type: application/json")
+                {
+                    curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $requestParams);
+                }
+                else
+                {
+                    $url = $url."?".$requestParams;
+                }
                 break;
         }
 
         curl_setopt($curlHandle, CURLOPT_URL, $url);
         curl_setopt($curlHandle, CURLOPT_HTTPHEADER, $this->_requestHeaders);
         curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curlHandle, CURLOPT_HEADER, false);
+        curl_setopt($curlHandle, CURLOPT_HEADERFUNCTION,
+            function($curl, $header) use (&$headers)
+            {
+                $len = strlen($header);
+                $header = explode(":", $header, 2);
+                if (count($header) < 2)
+                {
+                    return $len;
+                }
+
+                $name = strtolower(trim($header[0]));
+                $headers[$name] = trim($header[1]);
+
+                return $len;
+            }
+        );
         curl_setopt($curlHandle, CURLOPT_TIMEOUT, 60);
 
         $result = curl_exec($curlHandle);
+
+        $this->_lastStatusCode = curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
+        if ($this->_lastStatusCode == self::HTTP_RATE_LIMIT)
+        {
+            $result = $this->retry($headers[self::RATE_LIMIT_RESET], $curlHandle);
+        }
+
         curl_close($curlHandle);
 
         unset($this->_requestHeaders["Content-Type"]);
+        return $result;
+    }
 
+    /**
+     * @brief get the last HTTP status code received
+     *
+     * @return int
+     */
+    public function getLastStatusCode()
+    {
+         return $this->_lastStatusCode;
+    }
+
+    /**
+     * @brief set the last HTTP status code received
+     *
+     * @param int $statusCode The code that was received
+     */
+    public function setLastStatusCode($statusCode)
+    {
+        $this->_lastStatusCode = $statusCode;
+    }
+
+    /**
+     * @brief Retry the request after waiting for the rate limit to roll over
+     *
+     * @param int $wait
+     * @param $curlHandle
+     *
+     * @return mixed
+     */
+    public function retry($wait, $curlHandle)
+    {
+        sleep($wait);
+        $result = curl_exec($curlHandle);
+        $this->_lastStatusCode = curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
         return $result;
     }
 }

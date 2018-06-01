@@ -61,6 +61,21 @@ class Transactions extends BaseApi
     }
 
     /**
+     * @brief Retrieve multiple transactions according to specific criteria, handle pagination
+     *
+     * @param mixed[] $requestParams Array of parameters to submit with GET request. All parameters are optional but if "ids"
+     *                               are not specified, all will be selected.
+     *                               Possible array keys: "ids","start","range","sort","sortDir","condition","search",
+     *                                                    "searchNotes","group_ids","performAll","externs","listFields"
+     *
+     * @return string JSON formatted array of response data: each page of data will be an element in that array.
+     */
+    public function retrieveMultiplePaginated($requestParams)
+    {
+        return parent::_retrieveMultiplePaginated($requestParams);
+    }
+
+    /**
      * @brief Retrieve multiple transactions according to specific criteria
      *
      * @param mixed[] $requestParams Array of parameters to submit with GET request. All parameters are optional but if "ids"
@@ -158,6 +173,21 @@ class Transactions extends BaseApi
     }
 
     /**
+     * @brief Update order information
+     *
+     * @param mixed[] $requestParams Array of parameters to submit with GET request.
+     *                               Possible array keys: "id" (required)
+     *
+     * @return string JSON formatted HTTP response
+     */
+    public function updateOrder($requestParams)
+    {
+        $options["headers"] = self::retrieveContentTypeHeader(self::CONTENT_TYPE_JSON);
+        $requiredParams = array("offer");
+        return $this->client->request($requestParams, $this->_mainTransactionEndpoint . "/" . self::ORDER, "put", $requiredParams, $options);
+    }
+
+    /**
      * @brief Create a transaction for a contact
      *
      * @param mixed[] $requestParams Array of parameters to submit with POST request.
@@ -173,8 +203,6 @@ class Transactions extends BaseApi
         $requiredParams = array(
             "contact_id",
             "chargeNow",
-            "invoice_template",
-            "gateway_id",
             "offer"
         );
         return $this->client->request($requestParams, $this->_mainTransactionEndpoint . "/" . self::PROCESS_MANUAL, "post", $requiredParams, $options);

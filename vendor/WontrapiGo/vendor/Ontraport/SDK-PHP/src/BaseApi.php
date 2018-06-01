@@ -42,12 +42,12 @@ abstract class BaseApi
     const CONTENT_TYPE_FORM = "form";
 
     /**
-     * $var string endpoint for object
+     * @var string endpoint for object
      */
     protected $_endpoint = NULL;
 
     /**
-     * $var string plural endpoint for object
+     * @var string plural endpoint for object
      */
     protected $_endpointPlural = NULL;
 
@@ -71,6 +71,32 @@ abstract class BaseApi
     {
         $requiredParams = array("id");
         return $this->client->request($requestParams, $this->_endpoint, "get", $requiredParams, $options = NULL);
+    }
+
+    /**
+     * @brief Retrieve multiple objects according to specific criteria, handle pagination
+     *
+     * @param $requestParams mixed[] Array of parameters to submit with GET request. If "ids"
+     *                               are not specified, all will be selected.
+     *                               Possible array keys: "objectID" (required),"ids","start","range","sort","sortDir",
+     *                                                    "condition","search","searchNotes","group_ids","performAll",
+     *                                                    "externs","listFields"
+     *
+     * @return string JSON formatted array of paginated response data: each page of data will be an element in that array
+     */
+    protected function _retrieveMultiplePaginated($requestParams)
+    {
+        $collection = json_decode($this->_retrieveCollectionInfo($requestParams), true);
+        $requestParams["start"] = $requestParams["start"] ?: 0;
+        $requestParams["range"] = $requestParams["range"] ?: 50;
+
+        $object_data = array();
+        while ($requestParams["start"] < $collection["data"]["count"])
+        {
+            $object_data[] = json_decode($this->_retrieveMultiple($requestParams), true);
+            $requestParams["start"] += $requestParams["range"];
+        }
+        return json_encode($object_data);
     }
 
     /**
