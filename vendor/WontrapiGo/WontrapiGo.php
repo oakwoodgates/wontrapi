@@ -1113,4 +1113,29 @@ class WontrapiGo {
 		return self::connect()->transaction()->markAsPaid( $args );
 	}
 
+	/**
+	 * Process a transaction
+	 *
+	 * @param  int $contact_id       Required - The Contact ID
+	 * @param  int $invoice_template Required - The ID of the invoice template to use for this transaction. Default is 1.
+	 * @param  int $gateway_id       Required - The ID of the gateway to use for this transaction. Note that this is 
+	 *                               the ID of the gateway object itself and not the external_id of the gateway. A transaction canâ€™t succeed without a valid gateway. 
+	 * @param  arr $offer            Required - The product and pricing offer for the transaction.
+	 * @param  arr $args             Other optional data to pass
+	 * @return json                  Response from Ontraport
+	 * @link   https://api.ontraport.com/doc/#process-a-transaction-manually OP API Documentation
+	 * @author github.com/oakwoodgates 
+	 * @since  0.3.3 Initial              
+	 */
+	public static function transaction_process( $contact_id, $invoice_template = 1, $gateway_id, $offer, $args = array() ) {
+		$args['chargeNow'] = 'chargeNow';
+		$args['contact_id'] = $contact_id;
+		$args['invoice_template'] = $invoice_template;
+		$args['gateway_id'] = $gateway_id;
+		$args['offer'] = $offer;
+
+		return self::connect()->transaction()->processManual( $args );
+	}
+
+
 }
