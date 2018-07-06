@@ -6,7 +6,7 @@
  * $user_id 	= A WordPress User's ID
  * $contact_id 	= An Ontraport Contact's ID (https://app.ontraport.com/#!/contact/edit&id=1234567)
  * $opuid 		= The $contact_id stored in the WordPress database (OntraPort User ID)
- * 
+ *
  * @since 0.1.1
  * @package Wontrapi
  */
@@ -162,3 +162,30 @@ function wontrapi_user(){
 */
 }
 add_action( 'cmb2_admin_init', 'wontrapi_user' );
+
+
+
+
+
+
+
+
+if( function_exists('acf_add_options_page') ) {
+
+	acf_add_options_page(array(
+		'page_title' 	=> 'Wontrapi Options',
+		'menu_title'	=> 'Wontrapi Options',
+		'menu_slug' 	=> 'wontrapi_options',
+		'capability'	=> 'edit_posts',
+		'redirect'		=> false
+	));
+/*
+	acf_add_options_sub_page(array(
+		'page_title' 	=> 'Theme Header Settings',
+		'menu_title'	=> 'Header',
+		'parent_slug'	=> 'wontrapi_options_2',
+	));
+*/
+
+
+}

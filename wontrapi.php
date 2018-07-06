@@ -171,6 +171,27 @@ final class Wontrapi {
 		$this->path     = plugin_dir_path( __FILE__ );
 	}
 
+
+	function my_acf_settings_path( $path ) {
+
+	    // update path
+	    $path = $this->path . '/vendor/acfp/';
+
+	    // return
+	    return $path;
+
+	}
+
+	function my_acf_settings_dir( $dir ) {
+
+	    // update path
+	    $dir = $this->url . '/vendor/acfp/';
+
+	    // return
+	    return $dir;
+
+	}
+
 	/**
 	 * Attach other plugin classes to the base plugin class.
 	 *
@@ -179,7 +200,7 @@ final class Wontrapi {
 	public function plugin_classes() {
 		$this->go = WontrapiGo::init( $this->id, $this->key );
 
-		$this->options = new Wontrapi_Options( $this );
+	//	$this->options = new Wontrapi_Options( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -304,6 +325,10 @@ final class Wontrapi {
 	}
 
 	public function include_dependencies() {
+		add_filter('acf/settings/path', array( $this, 'my_acf_settings_path') );
+		add_filter('acf/settings/dir', array( $this, 'my_acf_settings_dir') );
+		require( self::dir( 'vendor/acfp/acf.php' ) );
+
 		require( self::dir( 'vendor/cmb2/init.php' ) );
 		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );
 		// Init Freemius.
@@ -446,7 +471,7 @@ function wontrapi_fs() {
 			'has_addons'		=> false,
 			'has_paid_plans'	=> false,
 			'is_org_compliant'	=> false,
-			'menu' 				=> array( 
+			'menu' 				=> array(
 				'slug' 		=> 'wontrapi_options',
 				'support' 	=> false,
 			),
