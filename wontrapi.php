@@ -263,6 +263,7 @@ final class Wontrapi {
 		$this->plugin_classes();
 		require( self::dir( 'includes/functions.php' ) );
 		require( self::dir( 'includes/functions-actions.php' ) );
+		require( self::dir( 'includes/user.php' ) );
 	}
 
 	/**
