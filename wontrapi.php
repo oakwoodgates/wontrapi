@@ -199,8 +199,7 @@ final class Wontrapi {
 	 */
 	public function plugin_classes() {
 		$this->go = WontrapiGo::init( $this->id, $this->key );
-
-	//	$this->options = new Wontrapi_Options( $this );
+		$this->options = new Wontrapi_Options( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -262,8 +261,10 @@ final class Wontrapi {
 		// Initialize plugin classes.
 		$this->plugin_classes();
 		require( self::dir( 'includes/functions.php' ) );
+		require( self::dir( 'includes/functions-deprecated.php' ) );
 		require( self::dir( 'includes/functions-actions.php' ) );
 		require( self::dir( 'includes/user.php' ) );
+		require( self::dir( 'includes/scripts.php' ) );
 	}
 
 	/**
@@ -323,12 +324,14 @@ final class Wontrapi {
 		$data = get_option( 'wontrapi_options' );
 		$this->id  = $data['api_appid'];
 		$this->key = $data['api_key'];
+	//	$this->id  = $data['api_appid'];
+	//	$this->key = $data['api_key'];
 	}
 
 	public function include_dependencies() {
-		add_filter('acf/settings/path', array( $this, 'my_acf_settings_path') );
-		add_filter('acf/settings/dir', array( $this, 'my_acf_settings_dir') );
-		require( self::dir( 'vendor/acfp/acf.php' ) );
+	//	add_filter('acf/settings/path', array( $this, 'my_acf_settings_path') );
+	//	add_filter('acf/settings/dir', array( $this, 'my_acf_settings_dir') );
+	//	require( self::dir( 'vendor/acfp/acf.php' ) );
 
 		require( self::dir( 'vendor/cmb2/init.php' ) );
 		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );

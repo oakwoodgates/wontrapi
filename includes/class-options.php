@@ -146,26 +146,34 @@ class Wontrapi_Options {
 		$cmb->add_field( array(
 			'name'    => __( 'API ID', 'wontrapi' ),
 			'id'      => 'api_appid', 
-			'type'    => 'text',
+			'type'    => 'text_medium',
 		) );
 
 		$cmb->add_field( array(
 			'name'    => __( 'API Key', 'wontrapi' ),
 			'id'      => 'api_key', 
-			'type'    => 'text',
+			'type'    => 'text_medium',
 		) );
 
 		$cmb->add_field( array(
 			'name'    => __( 'Ping Key', 'wontrapi' ),
 			'id'      => 'ping_key', 
-			'type'    => 'text',
+			'default' => 'wontrapi_key',
+			'type'    => 'text_medium',
 		) );
 
 		$cmb->add_field( array(
 			'name'    => __( 'Ping Key value', 'wontrapi' ),
 			'id'      => 'ping_value', 
-			'type'    => 'text',
+			'default' => '774562',
+			'type'    => 'text_medium',
 		) );
 
+		$cmb->add_field( array(
+			'name'    => __( 'Add tracking script?', 'wontrapi' ),
+			'desc'    => __( 'To enable tracking, copy and paste the full script here. <a href="https://support.ontraport.com/hc/en-us/articles/217882408-Web-Page-Tracking" target="_blank">Click here for intructions</a>', 'wontrapi' ),
+			'id'      => 'tracking', 
+			'type'    => 'text',
+		) );
 	}
 }
