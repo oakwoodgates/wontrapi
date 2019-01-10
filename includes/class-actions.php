@@ -45,11 +45,12 @@ class Wontrapi_Actions {
 
 	function listen() {
 		$data = get_option( 'wontrapi_options' );
-		// if ( empty( $data['ping_key'] ) || empty( $data['ping_value'] )	) {
+
 		if ( empty( $data['ping_value'] ) ) {
 			return;
 		}
-		$ping_key = ( $data['ping_key'] ) ? $data['ping_key'] : 'wontrapi_key';
+
+		$ping_key = ( !empty( $data['ping_key'] ) ) ? $data['ping_key'] : 'wontrapi_key';
 		$ping_val = $data['ping_value'];
 		if ( isset( $_POST["$ping_key"] ) ) {
 			if ( $_POST["$ping_key"] == $ping_val ) {
