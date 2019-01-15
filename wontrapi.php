@@ -3,7 +3,7 @@
  * Plugin Name: Wontrapi
  * Plugin URI:  https://wontrapi.com
  * Description: A radical new plugin for WordPress!
- * Version:     0.3.2
+ * Version:     0.4.0
  * Author:      WPGuru4u
  * Author URI:  https://wpguru4u.com
  * Donate link: https://wontrapi.com
@@ -14,7 +14,7 @@
  * @link    https://wontrapi.com
  *
  * @package Wontrapi
- * @version 0.3.2
+ * @version 0.4.0
  *
  * Built using generator-plugin-wp (https://github.com/WebDevStudios/generator-plugin-wp)
  */
@@ -72,7 +72,7 @@ final class Wontrapi {
 	 * @var    string
 	 * @since  0.3.0
 	 */
-	const VERSION = '0.3.2';
+	const VERSION = '0.4.0';
 
 	/**
 	 * URL of plugin directory.
@@ -147,6 +147,14 @@ final class Wontrapi {
 	protected $go;
 
 	/**
+	 * Instance of Wontrapi_Go
+	 *
+	 * @since 0.4.0
+	 * @var Wontrapi_Actions
+	 */
+	protected $actions;
+
+	/**
 	 * Creates or returns an instance of this class.
 	 *
 	 * @since   0.3.0
@@ -171,27 +179,6 @@ final class Wontrapi {
 		$this->path     = plugin_dir_path( __FILE__ );
 	}
 
-
-	function my_acf_settings_path( $path ) {
-
-	    // update path
-	    $path = $this->path . '/vendor/acfp/';
-
-	    // return
-	    return $path;
-
-	}
-
-	function my_acf_settings_dir( $dir ) {
-
-	    // update path
-	    $dir = $this->url . '/vendor/acfp/';
-
-	    // return
-	    return $dir;
-
-	}
-
 	/**
 	 * Attach other plugin classes to the base plugin class.
 	 *
@@ -200,6 +187,7 @@ final class Wontrapi {
 	public function plugin_classes() {
 		$this->go = WontrapiGo::init( $this->id, $this->key );
 		$this->options = new Wontrapi_Options( $this );
+		$this->actions = new Wontrapi_Actions( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -261,10 +249,7 @@ final class Wontrapi {
 		// Initialize plugin classes.
 		$this->plugin_classes();
 		require( self::dir( 'includes/functions.php' ) );
-		require( self::dir( 'includes/functions-deprecated.php' ) );
-		require( self::dir( 'includes/functions-actions.php' ) );
 		require( self::dir( 'includes/user.php' ) );
-		require( self::dir( 'includes/scripts.php' ) );
 	}
 
 	/**
@@ -322,18 +307,12 @@ final class Wontrapi {
 
 	public function ontraport_keys() {
 		$data = get_option( 'wontrapi_options' );
-		$this->id  = $data['api_appid'];
-		$this->key = $data['api_key'];
-	//	$this->id  = $data['api_appid'];
-	//	$this->key = $data['api_key'];
+		$this->id = ( !empty( $data['api_appid'] ) ) ? $data['api_appid'] : 0;
+		$this->key = ( !empty( $data['api_key'] ) ) ? $data['api_key'] : 0;
 	}
 
 	public function include_dependencies() {
-	//	add_filter('acf/settings/path', array( $this, 'my_acf_settings_path') );
-	//	add_filter('acf/settings/dir', array( $this, 'my_acf_settings_dir') );
-	//	require( self::dir( 'vendor/acfp/acf.php' ) );
-
-		require( self::dir( 'vendor/cmb2/init.php' ) );
+		require( self::dir( 'vendor/CMB2/init.php' ) );
 		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );
 		// Init Freemius.
 		wontrapi_fs();
@@ -386,6 +365,7 @@ final class Wontrapi {
 			case 'path':
 			case 'options':
 			case 'go':
+			case 'actions':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
@@ -446,10 +426,6 @@ final class Wontrapi {
  */
 function wontrapi() {
 	return Wontrapi::get_instance();
-}
-
-function wontrapiGo() {
-	return wontrapi()->go;
 }
 
 // Kick it off.
