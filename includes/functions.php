@@ -40,8 +40,8 @@ function wontrapi_get_data( $response, $all = false ) {
 	return WontrapiHelp::get_data_from_response( $response, $all );
 }
 
-///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -82,7 +82,6 @@ function wontrapi_update_website_subscriber_id( $user_id, $ws_id ) {
 ///////////////////////////////////////////////////////////////////////////////
 
 
-
 /**
  * GET CONTACTS
  */
@@ -117,19 +116,18 @@ function wontrapi_get_contacts_by_email( $email = '' ) {
  * Get contacts from OP by userID in WP
  */
 function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
-	$contact = 0;
+	$contact = false;
 	$contact_id = wontrapi_get_opuid( $user_id );
 
 	// try to get by contact_id
 	if ( $contact_id ) {
 		$contact = wontrapi_get_contact_by_contact_id( $contact_id );
-	//	$contact = WontrapiGo::get_contact( $contact_id );
 		// check that our local contact_id's user wasn't deleted or merged in OP
-		if ( WontrapiHelp::get_id_from_response( $contact ) ) {
+		if ( $contact ) {
 			return $contact;
-		} 
-		$contact = 0; // reset
-		wontrapi_delete_opuid( $user_id ); // false contact_id
+		} else {
+			wontrapi_delete_opuid( $user_id ); // false contact_id
+		}
 	}
 
 	// try to get by email
@@ -146,7 +144,6 @@ function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
 			}
 			return $contact;
 		}
-		$contact = 0; // reset
 	}
 
 	return $contact;
@@ -154,6 +151,7 @@ function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
 
 /**
  * ADD CONTACTS
@@ -175,7 +173,6 @@ function wontrapi_add_or_update_contact( $email = '', $args = array() ) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
 
 
 /**
@@ -215,7 +212,6 @@ function wontrapi_remove_tag_from_user( $user_id, $tag_ids ) {
 	} 
 	return 0;
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
