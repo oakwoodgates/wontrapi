@@ -55,8 +55,9 @@ class Wontrapi_Actions {
 		if ( isset( $_POST["$ping_key"] ) ) {
 			if ( $_POST["$ping_key"] == $ping_val ) {
 				if ( isset( $_POST['wontrapi_action'] ) ) {
+					$action = sanitize_key( $_POST['wontrapi_action'] );
 					// fire a specific action based on the event
-					do_action( "wontrapi_post_action_{$_POST['wontrapi_action']}", $_POST );
+					do_action( "wontrapi_post_action_{$action}", $_POST );
 				}
 			}
 		}
