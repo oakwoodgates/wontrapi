@@ -123,7 +123,7 @@ final class Wontrapi {
 	protected $id;
 
 	/**
-	 * Ontraport App ID.
+	 * Ontraport App Key.
 	 *
 	 * @var    Wontrapi
 	 * @since  0.3.0
@@ -131,12 +131,20 @@ final class Wontrapi {
 	protected $key;
 
 	/**
+	 * Slug for admin urls and database keys.
+	 *
+	 * @var    Wontrapi
+	 * @since  0.5.0
+	 */
+	public $slug = 'wontrapi_options';
+
+	/**
 	 * Instance of Wontrapi_Options
 	 *
 	 * @since0.3.0
 	 * @var Wontrapi_Options
 	 */
-	protected $options;
+	public $options;
 
 	/**
 	 * Instance of Wontrapi_Go
@@ -144,7 +152,7 @@ final class Wontrapi {
 	 * @since0.3.0
 	 * @var Wontrapi_Go
 	 */
-	protected $go;
+	public $go;
 
 	/**
 	 * Instance of Wontrapi_Go
