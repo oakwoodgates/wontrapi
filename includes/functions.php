@@ -176,6 +176,14 @@ function wontrapi_add_or_update_contact( $email = '', $args = array() ) {
 	return $response;
 }
 
+function wontrapi_add_contact() {
+	
+}
+
+function wontrapi_update_contact() {
+	
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
