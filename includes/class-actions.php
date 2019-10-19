@@ -100,10 +100,14 @@ class Wontrapi_Actions {
 		if ( isset( $_POST["$ping_key"] ) ) {
 			if ( $_POST["$ping_key"] == $ping_val ) {
 				if ( isset( $_POST['wontrapi_action'] ) ) {
-					$action = sanitize_key( $_POST['wontrapi_action'] );
-					// fire a specific action based on the event
-					do_action( "wontrapi_post_action_{$action}", $_POST );
-					return rest_ensure_response( 'Success! ' . $action );
+					$actions = $_POST['wontrapi_action'];
+					$actions = explode(',', $actions);
+					foreach ( $actions as $action ) {
+						$action = sanitize_key( $action );
+						// fire a specific action based on the event
+						do_action( "wontrapi_post_action_{$action}", $_POST );
+					}
+					return rest_ensure_response( 'Success!' );
 				}
 			}
 		}
