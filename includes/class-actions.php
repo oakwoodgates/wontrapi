@@ -44,26 +44,6 @@ class Wontrapi_Actions {
 		add_action( 'rest_api_init', 	array( $this, 'register_post_route' ) );
 	}
 
-	function listen() {
-		$data = get_option( 'wontrapi_options' );
-
-		if ( empty( $data['ping_value'] ) ) {
-			return;
-		}
-
-		$ping_key = ( !empty( $data['ping_key'] ) ) ? $data['ping_key'] : 'wontrapi_key';
-		$ping_val = $data['ping_value'];
-		if ( isset( $_POST["$ping_key"] ) ) {
-			if ( $_POST["$ping_key"] == $ping_val ) {
-				if ( isset( $_POST['wontrapi_action'] ) ) {
-					$action = sanitize_key( $_POST['wontrapi_action'] );
-					// fire a specific action based on the event
-					do_action( "wontrapi_post_action_{$action}", $_POST );
-				}
-			}
-		}
-	}
-
 	function tracking_script() {
 		$data = get_option( 'wontrapi_options' );
 		if ( !empty( $data['tracking'] ) ) {
@@ -100,10 +80,14 @@ class Wontrapi_Actions {
 		if ( isset( $_POST["$ping_key"] ) ) {
 			if ( $_POST["$ping_key"] == $ping_val ) {
 				if ( isset( $_POST['wontrapi_action'] ) ) {
-					$action = sanitize_key( $_POST['wontrapi_action'] );
-					// fire a specific action based on the event
-					do_action( "wontrapi_post_action_{$action}", $_POST );
-					return rest_ensure_response( 'Success! ' . $action );
+					$actions = $_POST['wontrapi_action'];
+					$actions = explode(',', $actions);
+					foreach ( $actions as $action ) {
+						$action = sanitize_key( $action );
+						// fire a specific action based on the event
+						do_action( "wontrapi_post_action_{$action}", $_POST );
+					}
+					return rest_ensure_response( 'Success!' );
 				}
 			}
 		}
