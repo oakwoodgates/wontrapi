@@ -20,14 +20,6 @@ class Wontrapi_Options {
 	 * @var    string
 	 * @since  0.3.0
 	 */
-	protected static $key = 'wontrapi_options';
-
-	/**
-	 * Option key, and option page slug.
-	 *
-	 * @var    string
-	 * @since  0.3.0
-	 */
 	protected $auth = 'wontrapi_auth';
 
 	/**
@@ -80,17 +72,17 @@ class Wontrapi_Options {
 	 * @since  0.3.0
 	 */
 	public function admin_init() {
-		register_setting( self::$key, self::$key );
+		register_setting( $this->plugin->slug, $this->plugin->slug );
 		register_setting( $this->auth, $this->auth, array( 'default' => array() ) );
 	}
 
 	public function submenu() {
 		add_submenu_page ( 
-			self::$key,
+			$this->plugin->slug,
 			$this->title,
 			$this->title,
 			'manage_options',
-			self::$key
+			$this->plugin->slug
 		);
 	}
 
@@ -104,10 +96,10 @@ class Wontrapi_Options {
 		<div id="poststuff">
 			<div id="post-body" class="metabox-holder columns-2">
 				<div id="post-body-content" style="position: relative;">
-					<div class="wrap cmb2-options-page <?php echo esc_attr( self::$key ); ?>">
+					<div class="wrap cmb2-options-page <?php echo esc_attr( $this->plugin->slug ); ?>">
 						<h1>Wontrapi Configuration Settings
 						<?php // echo esc_html( get_admin_page_title() ); ?></h1>
-						<?php cmb2_metabox_form( $this->metabox_id, self::$key ); ?>
+						<?php cmb2_metabox_form( $this->metabox_id, $this->plugin->slug ); ?>
 					</div>
 				</div>
 				<div id="postbox-container-1" class="postbox-container">
@@ -134,7 +126,7 @@ class Wontrapi_Options {
 			'show_on'      => array(
 				// These are important, don't remove.
 				'key'   => 'options-page',
-				'value' => array( self::$key ),
+				'value' => array( $this->plugin->slug ),
 			),
 		) );
 
@@ -170,7 +162,7 @@ class Wontrapi_Options {
 			'id'   => 'wiki_test_title1'
 		) );
 
-		$options = get_option( self::$key, array() );
+		$options = get_option( $this->plugin->slug, array() );
 	//	$ping_value = ( !empty( $options['ping_value'] ) ) ? $options['ping_value'] : rand();
 		if ( isset( $_POST['ping_value'] ) ) {
 			$ping_value = $_POST['ping_value'];
