@@ -45,7 +45,7 @@ class Wontrapi_Cache {
 	/**
 	 * 
 	 */
-	public static get_user( $user_id = 0 ) {
+	public static function get_user( $user_id = 0 ) {
 		if ( ! (int) $user_id )
 			return false;
 
@@ -61,7 +61,7 @@ class Wontrapi_Cache {
 		return $data;
 	}
 
-	public static set_user( $user_id = 0, $data = '' ) {
+	public static function set_user( $user_id = 0, $data = '' ) {
 		if ( ! (int) $user_id || empty( $data ) )
 			return false;
 
@@ -71,7 +71,7 @@ class Wontrapi_Cache {
 		return set_transient( 'wontrapi_user_' . $user_id, $data, 1800 );
 	}
 
-	public static delete_user( $user_id = 0 ) {
+	public static function delete_user( $user_id = 0 ) {
 		if ( ! (int) $user_id )
 			return false;
 
