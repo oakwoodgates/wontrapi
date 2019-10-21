@@ -41,4 +41,41 @@ class Wontrapi_Cache {
 	public function hooks() {
 
 	}
+
+	/**
+	 * 
+	 */
+	public static get_user( $user_id = 0 ) {
+		if ( ! (int) $user_id )
+			return false;
+
+		$data = get_transient( 'wontrapi_user_' . $user_id );
+		if ( ! empty( $data ) ) {
+			$data = maybe_unserialize( $data );
+		} else {
+			// It wasn't there, so regenerate the data and save the transient
+			$data = wontrapi_get_contacts_by_user_id( $user_id );
+			$data = WontrapiHelp::get_data_from_response( $data, false );
+			self::set_user( $user_id, $data );
+		}
+		return $data;
+	}
+
+	public static set_user( $user_id = 0, $data = '' ) {
+		if ( ! (int) $user_id || empty( $data ) )
+			return false;
+
+		if ( ! is_serialized( $data ) )
+			$data = maybe_serialize( $data );
+
+		return set_transient( 'wontrapi_user_' . $user_id, $data, 1800 );
+	}
+
+	public static delete_user( $user_id = 0 ) {
+		if ( ! (int) $user_id )
+			return false;
+
+		return delete_transient( 'wontrapi_user_' . $user_id );
+	}
+
 }
