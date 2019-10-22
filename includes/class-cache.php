@@ -39,6 +39,15 @@ class Wontrapi_Cache {
 	 * @since  0.3.0
 	 */
 	public function hooks() {
+		add_action( 'user_register', array( $this, 'user_register' ), 20, 1 );
+		add_action( 'wp_login', array( $this, 'user_login' ), 20, 2 );
+	}
+
+	public static function user_register( $user_id ) {
+		
+	}
+
+	public static function user_login( $user_login, $user ) {
 
 	}
 
