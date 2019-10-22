@@ -78,4 +78,46 @@ class Wontrapi_Cache {
 		return delete_transient( 'wontrapi_user_' . $user_id );
 	}
 
+
+	public static function get_contact( $value ) {
+
+		$email = $contact_id = $data = 0;
+
+		if ( filter_var( $value, FILTER_VALIDATE_EMAIL ) ) {
+			$email = $value;
+			// todo - logic
+		} elseif ( (int) $value ) {
+			$contact_id = $value;
+			$data = get_transient( 'wontrapi_contact_' . $contact_id );
+			if ( false === $data ) {
+				$data = wontrapi_get_contact_by_contact_id( $contact_id );
+				$data = WontrapiHelp::get_data_from_response( $data, false );
+				self::set_contact( $user_id, $data );
+			} else {
+				$data = maybe_unserialize( $data );
+			}
+		} else {
+			return false;
+		}
+
+		return $data;
+	}
+
+	public static function set_contact( $user_id = 0, $data = '' ) {
+		if ( ! (int) $user_id || empty( $data ) )
+			return false;
+
+		if ( ! is_serialized( $data ) )
+			$data = maybe_serialize( $data );
+
+		return set_transient( 'wontrapi_contact_' . $user_id, $data, 1800 );
+	}
+
+	public static function delete_contact( $user_id = 0 ) {
+		if ( ! (int) $user_id )
+			return false;
+
+		return delete_transient( 'wontrapi_contact_' . $user_id );
+	}
+
 }
