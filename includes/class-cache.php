@@ -101,7 +101,7 @@ class Wontrapi_Cache {
 			if ( false === $data ) {
 				$data = wontrapi_get_contact_by_contact_id( $contact_id );
 				$data = WontrapiHelp::get_data_from_response( $data, false );
-				self::set_contact( $user_id, $data );
+				self::set_contact( $contact_id, $data );
 			} else {
 				$data = maybe_unserialize( $data );
 			}
@@ -112,21 +112,21 @@ class Wontrapi_Cache {
 		return $data;
 	}
 
-	public static function set_contact( $user_id = 0, $data = '' ) {
-		if ( ! (int) $user_id || empty( $data ) )
+	public static function set_contact( $contact_id = 0, $data = '' ) {
+		if ( ! (int) $contact_id || empty( $data ) )
 			return false;
 
 		if ( ! is_serialized( $data ) )
 			$data = maybe_serialize( $data );
 
-		return set_transient( 'wontrapi_contact_' . $user_id, $data, 1800 );
+		return set_transient( 'wontrapi_contact_' . $contact_id, $data, 1800 );
 	}
 
-	public static function delete_contact( $user_id = 0 ) {
-		if ( ! (int) $user_id )
+	public static function delete_contact( $contact_id = 0 ) {
+		if ( ! (int) $contact_id )
 			return false;
 
-		return delete_transient( 'wontrapi_contact_' . $user_id );
+		return delete_transient( 'wontrapi_contact_' . $contact_id );
 	}
 
 }
