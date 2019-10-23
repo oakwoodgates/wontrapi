@@ -2,20 +2,20 @@
 /**
  * Wontrapi Cache.
  *
- * @since   0.3.0
+ * @since   0.5.2
  * @package Wontrapi
  */
 
 /**
  * Wontrapi Cache.
  *
- * @since 0.3.0
+ * @since 0.5.2
  */
 class Wontrapi_Cache {
 	/**
 	 * Parent plugin class.
 	 *
-	 * @since 0.3.0
+	 * @since 0.5.2
 	 *
 	 * @var   Wontrapi
 	 */
@@ -24,7 +24,7 @@ class Wontrapi_Cache {
 	/**
 	 * Constructor.
 	 *
-	 * @since  0.3.0
+	 * @since  0.5.2
 	 *
 	 * @param  Wontrapi $plugin Main plugin object.
 	 */
@@ -36,7 +36,7 @@ class Wontrapi_Cache {
 	/**
 	 * Initiate our hooks.
 	 *
-	 * @since  0.3.0
+	 * @since  0.5.2
 	 */
 	public function hooks() {
 		add_action( 'user_register', array( $this, 'user_register' ), 20, 1 );
