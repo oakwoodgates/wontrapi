@@ -3,7 +3,7 @@
  * Plugin Name: Wontrapi
  * Plugin URI:  https://wontrapi.com
  * Description: A radical new plugin for WordPress!
- * Version:     0.5.1
+ * Version:     0.5.2
  * Author:      WPGuru4u
  * Author URI:  https://wpguru4u.com
  * Donate link: https://wontrapi.com
@@ -14,7 +14,7 @@
  * @link    https://wontrapi.com
  *
  * @package Wontrapi
- * @version 0.5.1
+ * @version 0.5.2
  *
  * Built using generator-plugin-wp (https://github.com/WebDevStudios/generator-plugin-wp)
  */
@@ -72,7 +72,7 @@ final class Wontrapi {
 	 * @var    string
 	 * @since  0.3.0
 	 */
-	const VERSION = '0.5.1';
+	const VERSION = '0.5.2';
 
 	/**
 	 * URL of plugin directory.
