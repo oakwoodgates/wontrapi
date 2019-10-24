@@ -21,6 +21,8 @@ class Wontrapi_Cache {
 	 */
 	protected $plugin = null;
 
+	public static $cache = array();
+
 	/**
 	 * Constructor.
 	 *
@@ -58,9 +60,14 @@ class Wontrapi_Cache {
 		if ( ! (int) $user_id )
 			return false;
 
+		if ( ! empty( self::$cache["user_$user_id"] ) ) {
+			return self::$cache["user_$user_id"];
+		}
+
 		$data = get_transient( 'wontrapi_user_' . $user_id );
 		if ( ! empty( $data ) ) {
 			$data = maybe_unserialize( $data );
+			self::$cache["user_$user_id"] = $data;
 		} else {
 			// It wasn't there, so regenerate the data and save the transient
 			$data = wontrapi_get_contacts_by_user_id( $user_id );
@@ -77,6 +84,7 @@ class Wontrapi_Cache {
 		if ( ! is_serialized( $data ) )
 			$data = maybe_serialize( $data );
 
+		self::$cache["user_$user_id"] = $data;
 		return set_transient( 'wontrapi_user_' . $user_id, $data, 1800 );
 	}
 
@@ -94,17 +102,21 @@ class Wontrapi_Cache {
 
 		if ( filter_var( $value, FILTER_VALIDATE_EMAIL ) ) {
 			$email = $value;
-			// todo - logic
+			// todo - logic for get by email
 		} elseif ( (int) $value ) {
 			$contact_id = $value;
+			if ( ! empty( self::$cache["contact_$contact_id"] ) ) {
+				return self::$cache["contact_$contact_id"];
+			}
 			$data = get_transient( 'wontrapi_contact_' . $contact_id );
 			if ( false === $data ) {
 				$data = wontrapi_get_contact_by_contact_id( $contact_id );
 				$data = WontrapiHelp::get_data_from_response( $data, false );
 				self::set_contact( $contact_id, $data );
-			} else {
-				$data = maybe_unserialize( $data );
+				return $data;
 			}
+			$data = maybe_unserialize( $data );
+			self::$cache["contact_$contact_id"] = $data;
 		} else {
 			return false;
 		}
@@ -119,6 +131,7 @@ class Wontrapi_Cache {
 		if ( ! is_serialized( $data ) )
 			$data = maybe_serialize( $data );
 
+		self::$cache["contact_$contact_id"] = $data;
 		return set_transient( 'wontrapi_contact_' . $contact_id, $data, 1800 );
 	}
 
