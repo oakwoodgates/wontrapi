@@ -461,7 +461,7 @@ function wontrapi() {
 }
 
 // Kick it off.
-add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
+add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ), 5 );
 
 // Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
