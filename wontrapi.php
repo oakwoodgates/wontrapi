@@ -196,6 +196,7 @@ final class Wontrapi {
 		$this->go = WontrapiGo::init( $this->id, $this->key );
 		$this->options = new Wontrapi_Options( $this );
 		$this->actions = new Wontrapi_Actions( $this );
+		$this->cache = new Wontrapi_Cache( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -374,6 +375,7 @@ final class Wontrapi {
 			case 'options':
 			case 'go':
 			case 'actions':
+			case 'cache':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
