@@ -37,6 +37,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+if ( ! defined( 'ABSPATH' ) ) 
+	exit;
 
 /**
  * Autoloads files with classes when needed.
@@ -117,7 +119,7 @@ final class Wontrapi {
 	/**
 	 * Ontraport App ID.
 	 *
-	 * @var    Wontrapi
+	 * @var    string
 	 * @since  0.3.0
 	 */
 	protected $id;
@@ -125,7 +127,7 @@ final class Wontrapi {
 	/**
 	 * Ontraport App Key.
 	 *
-	 * @var    Wontrapi
+	 * @var    string
 	 * @since  0.3.0
 	 */
 	protected $key;
@@ -133,7 +135,7 @@ final class Wontrapi {
 	/**
 	 * Slug for admin urls and database keys.
 	 *
-	 * @var    Wontrapi
+	 * @var    string
 	 * @since  0.5.0
 	 */
 	public $slug = 'wontrapi_options';
@@ -141,26 +143,34 @@ final class Wontrapi {
 	/**
 	 * Instance of Wontrapi_Options
 	 *
-	 * @since0.3.0
-	 * @var Wontrapi_Options
+	 * @var    Wontrapi_Options
+	 * @since  0.3.0
 	 */
 	public $options;
 
 	/**
 	 * Instance of Wontrapi_Go
 	 *
-	 * @since0.3.0
-	 * @var Wontrapi_Go
+	 * @var    Wontrapi_Go
+	 * @since  0.3.0
 	 */
 	public $go;
 
 	/**
-	 * Instance of Wontrapi_Go
+	 * Instance of Wontrapi_Actions
 	 *
-	 * @since 0.4.0
-	 * @var Wontrapi_Actions
+	 * @var    Wontrapi_Actions
+	 * @since  0.4.0
 	 */
 	protected $actions;
+
+	/**
+	 * FS object
+	 * 
+	 * @var    object  
+	 * @since  0.5.3
+	 */
+	public static $fs = null;
 
 	/**
 	 * Creates or returns an instance of this class.
@@ -185,6 +195,35 @@ final class Wontrapi {
 		$this->basename = plugin_basename( __FILE__ );
 		$this->url      = plugin_dir_url( __FILE__ );
 		$this->path     = plugin_dir_path( __FILE__ );
+		$this->fs();
+	}
+
+	public function fs() {
+
+	// Create a helper function for easy SDK access.
+		// Init Freemius.
+
+		if ( ! isset( self::$fs) ) {
+			// Include Freemius SDK.
+			self::include_file( 'vendor/freemius/start' );
+
+			self::$fs = fs_dynamic_init( array(
+				'id' 				=> '1284',
+				'slug' 				=> 'wontrapi',
+				'type' 				=> 'plugin',
+				'public_key' 		=> 'pk_f3f99e224cd062ba9d7fda46ab973',
+				'is_premium' 		=> false,
+				'has_addons'		=> true,
+				'has_paid_plans'	=> false,
+				'is_org_compliant'	=> true,
+				'menu' 				=> array(
+					'slug' 		=> 'wontrapi_options',
+					'support' 	=> false,
+				),
+			) );
+		}
+		// Signal that SDK was initiated.
+		do_action( 'wontrapi_fs_loaded' );
 	}
 
 	/**
@@ -209,7 +248,7 @@ final class Wontrapi {
 	 * @since  0.3.0
 	 */
 	public function hooks() {
-		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'init', array( $this, 'init' ), -1 );
 	}
 
 	/**
@@ -244,21 +283,21 @@ final class Wontrapi {
 	 */
 	public function init() {
 
+		// Load translated strings for plugin.
+		load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
+
 		// Bail early if requirements aren't met.
 		if ( ! $this->check_requirements() ) {
 			return;
 		}
-
-		// Load translated strings for plugin.
-		load_plugin_textdomain( 'wontrapi', false, dirname( $this->basename ) . '/languages/' );
 
 		// Setup OP
 		$this->ontraport_keys();
 		$this->include_dependencies();
 		// Initialize plugin classes.
 		$this->plugin_classes();
-		require( self::dir( 'includes/functions.php' ) );
-		require( self::dir( 'includes/user.php' ) );
+		self::include_file( 'includes/functions' );
+		self::include_file( 'includes/user' );
 	}
 
 	/**
@@ -321,34 +360,8 @@ final class Wontrapi {
 	}
 
 	public function include_dependencies() {
-		require( self::dir( 'vendor/CMB2/init.php' ) );
-		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );
-
-		// Init Freemius.
-		global $wontrapi_fs;
-
-		if ( ! isset( $wontrapi_fs ) ) {
-			// Include Freemius SDK.
-			require_once dirname(__FILE__) . '/vendor/freemius/start.php';
-
-			$wontrapi_fs = fs_dynamic_init( array(
-				'id' 				=> '1284',
-				'slug' 				=> 'wontrapi',
-				'type' 				=> 'plugin',
-				'public_key' 		=> 'pk_f3f99e224cd062ba9d7fda46ab973',
-				'is_premium' 		=> false,
-				'has_addons'		=> true,
-				'has_paid_plans'	=> false,
-				'is_org_compliant'	=> true,
-				'menu' 				=> array(
-					'slug' 		=> 'wontrapi_options',
-					'support' 	=> false,
-				),
-			) );
-		}
-
-		// Signal that SDK was initiated.
-		do_action( 'wontrapi_fs_loaded' );
+		self::include_file( 'vendor/CMB2/init' );
+		self::include_file( 'vendor/WontrapiGo/WontrapiGo' );
 	}
 
 	/**
@@ -459,9 +472,8 @@ final class Wontrapi {
 function wontrapi() {
 	return Wontrapi::get_instance();
 }
-
 // Kick it off.
-add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ), 5 );
+add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
 
 // Activation and deactivation.
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
