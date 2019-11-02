@@ -198,10 +198,8 @@ final class Wontrapi {
 		$this->fs();
 	}
 
-	public function fs() {
 
-	// Create a helper function for easy SDK access.
-		// Init Freemius.
+	public function fs() {
 
 		if ( ! isset( self::$fs) ) {
 			// Include Freemius SDK.
@@ -221,9 +219,10 @@ final class Wontrapi {
 					'support' 	=> false,
 				),
 			) );
+
+			// Signal that SDK was initiated.
+			do_action( 'wontrapi_fs_loaded' );
 		}
-		// Signal that SDK was initiated.
-		do_action( 'wontrapi_fs_loaded' );
 	}
 
 	/**
@@ -350,6 +349,11 @@ final class Wontrapi {
 
 		// Do checks for required classes / functions or similar.
 		// Add detailed messages to $this->activation_errors array.
+		if ( PHP_VERSION < 5.3 ) {
+			$this->activation_errors[] = __( 'A minimum of PHP version 5.3 is required. Contact your webmaster or your web host to update.', 'wontrapi' );
+			return false;
+		}
+
 		return true;
 	}
 
