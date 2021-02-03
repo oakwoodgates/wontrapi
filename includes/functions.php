@@ -99,6 +99,7 @@ function wontrapi_update_website_subscriber_id( $user_id, $ws_id ) {
  */
 function wontrapi_get_contact_by_contact_id( $contact_id = 0 ) {
 	$contact = WontrapiGo::get_contact( $contact_id );
+	$contact = WontrapiHelp::get_data_from_response( $contact, false );
 	return ( WontrapiHelp::get_id_from_response( $contact ) ) ? $contact : false;
 }
 
@@ -111,15 +112,27 @@ function wontrapi_get_contact_by_contact_id( $contact_id = 0 ) {
  * @param  string    $email A valid email address
  * @return str|false        JSON string or false 
  */
-function wontrapi_get_contacts_by_email( $email = '' ) {
+function wontrapi_get_contacts_by_email( $email = '', $all = true ) {
 	$contacts = WontrapiGo::get_contacts_by_email( $email );
+	$contacts = WontrapiHelp::get_data_from_response( $contacts, $all );
+
+//	$user_id = email_exists( $email ) 
+
+//	if ( $user_id && ( ! $all ||  ) ) {
+
+//	}
 	return ( WontrapiHelp::get_id_from_response( $contacts ) ) ? $contacts : false;
 }
 
 /**
  * Get contacts from OP by userID in WP
  */
-function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
+function wontrapi_get_contacts_by_user_id( $user_id = 0, $all = true ) {
+
+	if ( ! $user_id ) {
+		return false;
+	}
+
 	$contact = false;
 	$contact_id = wontrapi_get_opuid( $user_id );
 
@@ -137,6 +150,7 @@ function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
 	// try to get by email
 	$user = get_user_by( 'id', $user_id );
 	if ( $user ) {
+		/*
 		$contact = wontrapi_get_contacts_by_email( $user->user_email ); 
 	//	$contact = WontrapiGo::get_contacts_by_email( $email );
 		$ids = WontrapiHelp::get_ids_from_response( $contact );
@@ -148,9 +162,56 @@ function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
 			}
 			return $contact;
 		}
+		*/
+		$contacts = wontrapi_get_contacts_by_email( $user->user_email, true );
+		$ids = WontrapiHelp::get_ids_from_response( $contacts );
+		// do we have a contact?
+		if ( ! empty( $ids ) ) {
+			// don't update contact_id in database if multiple contacts found in OP
+			if ( 1 === count( $ids ) || !$all ) {
+				wontrapi_update_opuid( $user_id, $ids[0] );
+				return wontrapi_get_data( $contacts, false );
+			}
+			return $contacts;
+		}
 	}
 
 	return $contact;
+/*
+	$user = get_user_by( 'id', $user_id );
+	if ( empty( $user->ID ) ) {
+		return false;
+	}
+
+	$contact_id = wontrapi_get_opuid( $user_id );
+
+	// try to get by contact_id
+	if ( $contact_id ) {
+		$contact = WontrapiGo::get_contact( $contact_id );
+		$contact = WontrapiHelp::get_data_from_response( $contact, false );
+		// check that our local contact_id's user wasn't deleted or merged in OP
+		if ( $contact ) {
+			return $contact;
+		} else {
+			wontrapi_delete_opuid( $user_id ); // false contact_id
+		}
+	}
+
+	// try to get by email
+	$contacts = WontrapiGo::get_contacts_by_email( $email );
+	$contacts = WontrapiHelp::get_data_from_response( $contacts, $all );
+	$ids = WontrapiHelp::get_ids_from_response( $contacts );
+	// do we have a contact?
+	if ( ! empty( $ids ) ) {
+		// don't update contact_id in database if multiple contacts found in OP
+		if ( 1 === count( $ids ) || !$all ) {
+			wontrapi_update_opuid( $user_id, $ids[0] );
+			return WontrapiHelp::get_data_from_response( $contacts, false );
+		}
+		return $contacts;
+	}
+	return false;
+ */
 }
 
 

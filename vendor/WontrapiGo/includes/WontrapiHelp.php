@@ -26,36 +26,37 @@ class WontrapiHelp {
 	 * WARNING: If multiple objects passed, this returns the first ID found. 
 	 * To return an array of all ID's in response, use get_ids_from_response()
 	 * 
-	 * @param  json|arr $response 	JSON response from Ontraport
-	 * @return int 					ID of the object, or zero
+	 * @param  json $response  JSON response from Ontraport. Also accepts data
+	 *                         decoded via self::get_data_from_response()
+	 * @return int 			   ID of the object, or zero
 	 * @author github.com/oakwoodgates 
 	 * @since  0.3.0 Initial
 	 */
 	public static function get_id_from_response( $response ) {
-		if( is_string( $response ) ) {
-			$response = json_decode( $response, true );
-		} 
-		if ( isset( $response['data'] ) ) {
 
-			if ( isset( $response['data']['id'] ) ) {
-				return (int) $response['data']['id'];
-			} elseif ( isset( $response['data']['attrs']['id'] ) ) {
-				return (int) $response['data']['attrs']['id'];
-			} elseif ( isset( $response['data'][0]['id'] ) ) {
-				return (int) $response['data'][0]['id'];
-			} elseif ( isset( $response['data']['ids'][0] ) ) {
-				return (int) $response['data']['ids'][0];
-			}
-		} elseif ( isset( $response['id'] ) ) {
-			return (int) $response['id'];
-		} elseif ( isset( $response['attrs']['id'] ) ) {
-			return (int) $response['attrs']['id'];
-		} elseif ( isset( $response[0]['id'] ) ) {
-			return (int) $response[0]['id'];
-		} elseif ( isset( $response['ids'][0] ) ) {
-			return (int) $response['ids'][0];
+		if ( is_string( $response ) ) {
+			$response = self::get_data_from_response( $response, false );
 		}
-
+		if ( is_array( $response ) ) {
+			if ( ! empty( $response[0] ) && is_object( $response[0] ) ) {
+				$response = $response[0];
+			}
+		}
+		if ( is_object( $response ) ) {
+			if ( isset( $response->data ) ) {
+				$response = self::get_data_from_response( $response, false );
+			}
+			if ( isset( $response->id ) ) {
+				return (int) $response->id;
+			}
+			if ( isset( $response->ids[0] ) ) {
+				return (int) $response->ids[0];
+			}
+			$key = key( $response );
+			if ( strpos( $key, '_id') !== false ) {
+				return (int) $response->{$key};
+			}
+		} 
 		return 0;
 	}
 
@@ -63,45 +64,46 @@ class WontrapiHelp {
 	 * Get the IDs of the objects (contact, form, etc ) from a successfully
 	 * created, updated, or retrieved request.
 	 * 
-	 * @param  json|arr $response 	JSON response from Ontraport
-	 * @return array          		Array of IDs of the objects, or empty array
+	 * @param  json  $response 	JSON response from Ontraport. Also accepts data
+	 *                          decoded via self::get_data_from_response()
+	 * @return array          	Array of IDs of the objects, or empty array
 	 * @author github.com/oakwoodgates 
 	 * @since  0.4.0 Initial
 	 */
 	public static function get_ids_from_response( $response ) {
-		if( is_string( $response ) ) {
-			$response = json_decode( $response, true );
-		} 
 
-		if ( isset( $response['data'] ) ) {
-			if ( isset( $response['data']['id'] ) ) {
-				return array( $response['data']['id'] );
-			} elseif ( isset( $response['data']['attrs']['id'] ) ) {
-				return array( $response['data']['attrs']['id'] );
-			} elseif ( isset( $response['data'][0]['id'] ) ) {
-				$ids = array();
-				foreach ( $response['data'] as $array ) {
-					$ids[] = $array['id'];
-				}
-				return $ids;
-			} elseif ( isset( $response['data']['ids'] ) ) {
-				return $response['data']['ids'];
-			}	
-		} elseif ( isset( $response['id'] ) ) {
-			return array( $response['id'] );
-		} elseif ( isset( $response['attrs']['id'] ) ) {
-			return array( $response['attrs']['id'] );
-		} elseif ( isset( $response[0]['id'] ) ) {
-			$ids = array();
-			foreach ( $response as $array ) {
-				$ids[] = $array['id'];
-			}
-			return $ids;
-		} elseif ( isset( $response['ids'] ) ) {
-			return $response['ids'];
+		$ids = array();
+
+		if ( is_string( $response ) ) {
+			$response = self::get_data_from_response( $response, true );
 		}
 
-		return array();
+		if ( is_array( $response ) ) {
+			$key = false;
+			if ( isset( $response['ids'] ) ) {
+				return $response['ids'];
+			} elseif ( isset( $response[0]->id ) ) {
+				$key = 'id';
+			} else {
+				$maybe_key = key( $response[0] );
+				if ( strpos( $maybe_key, '_id') !== false ) {
+					$key = $maybe_key;
+				}
+			}
+			if ( $key ) {
+				foreach ( $response as $obj ) {
+					$ids[] = $obj->{$key};
+				}
+				return $ids;
+			}
+		} elseif ( is_object( $response ) ) {
+			if ( isset( $response->ids ) ) {
+				return $response->ids;
+			} elseif ( $id = self::get_id_from_response( $response ) ) {
+				$ids[] = $id;
+			}
+		}
+		return $ids;
 	}
 
 	/**
@@ -111,52 +113,49 @@ class WontrapiHelp {
 	 * if we are creating, updating, retrieving a single or multiple contacts, and whether
 	 * we want to deal with multiple returned contacts or if first found will do.
 	 * 
-	 * @param  json|arr $response 	JSON response from Ontraport
-	 * @param  bool 	$all 		Return all datasets (true) or first dataset (false)
-	 * @return arr    				Array 
+	 * @param  json  $response  JSON response from Ontraport 
+	 * @param  bool  $all 		Return all datasets (true) or first dataset (false)
+	 * @return mixed    		Object, array, or string
 	 * @author github.com/oakwoodgates 
 	 * @since  0.4.0 Initial
 	 */
 	public static function get_data_from_response( $response, $all = true ) {
-
 		if ( is_string( $response ) ) {
-			$response = json_decode( $response, true );
-		} 
-
-		if ( !empty( $response['data'] ) ) {
-			$data = $response['data'];
-			// return typical response from popular objects first (contact & transactions) 
-			if ( !empty( $data['id'] ) ) {
-				return $data;
-			// from updating a contact or object
-			} elseif ( !empty( $data['attrs'] ) ) {
-				return $data['attrs'];
-			} elseif ( is_array( $data ) ) {
-				if ( is_numeric( key( $data ) ) ) {
-					if ( !empty( $data[0]['id'] ) || !empty( $data[0]['form_id'] ) ) {
-						// multiple contacts or objects
-						if ( $all ) {
-							return $data;
-						} else {
-							return $data[0];
-						}
-					} else {
-						// from retrieve object meta
-					//	return reset( $data );						
-					//	@todo make function for getting retrieve object meta data
-						return $data;						
-					}
-				} else {
-					// not formatted like popular objects, or from creating fields and sections
-					return $data;
-				}
-			} else {
-				// we have a string response
-				return $data;
+			$original_response = $response;
+			$response = json_decode( $response );
+			if ( ! $response ) {
+				return $original_response;
 			}
-		} else {
-			return 0;
 		}
+
+		if ( isset( $response->data->id ) ) {
+			return $response->data;
+		} elseif ( isset( $response->data->attrs->id ) ) {
+			return $response->data->attrs;
+		} elseif ( isset( $response->id ) ) {
+			return $response;
+		} elseif ( isset( $response->data ) ) {
+			if ( is_array( $response->data ) ) {
+				if ( ! $all ) {
+					$key = key( $response->data );
+					if ( is_numeric( $key ) ) {
+						return $response->data[$key];
+					}					
+				}
+			} elseif ( is_object( $response->data ) ) {
+				$key = key( $response->data );
+				if ( is_numeric( $key ) ) {
+					return $response->data->{$key};
+				}
+			} 
+			return $response->data;
+		} elseif ( is_array( $response ) && ! empty( $response ) ) {
+			if ( ! $all ) {
+				$key = key($response);
+				return $response[$key];
+			}
+		}
+		return $response;
 	}
 
 	/**
@@ -196,15 +195,9 @@ class WontrapiHelp {
 	 * @since  0.3.1 Initial
 	 */
 	public static function contact_has_tag( $contact, $tag ) {
-		$contact = self::get_data_from_response( $contact, false );
-		if ( isset( $contact['contact_cat'] ) ) {
-			$contact_tags = $contact['contact_cat'];
-			if ( $contact_tags ) {
-				$contact_tags = array_filter( explode( '*/*',$contact_tags ) );
-				if ( in_array( $tag, $contact_tags ) ){
-					return true;
-				}
-			}
+		$contact_tags = self::get_contact_tag_array( $contact );
+		if ( in_array( $tag, $contact_tags ) ){
+			return true;
 		}
 		return false;
 	}
@@ -217,13 +210,15 @@ class WontrapiHelp {
 	 * @author github.com/oakwoodgates 
 	 * @since  0.5.0 Initial
 	 */
-	public static function contact_tag_array( $contact ) {
-		$contact = self::get_data_from_response( $contact, false );
-		if ( isset( $contact['contact_cat'] ) ) {
-			$contact_tags = $contact['contact_cat'];
-			if ( $contact_tags ) {
-				return array_filter( explode( '*/*', $contact_tags ) );
-			}
+	public static function get_contact_tag_array( $contact ) {
+		if ( is_string( $contact ) ) {
+			$contact = self::get_data_from_response( $contact, false );
+		}
+		if ( ! empty( $contact->contact_cat ) ) {
+			return array_filter( explode( '*/*', $contact->contact_cat ) );
+		}
+		if ( ! empty( $contact['contact_cat'] ) && is_array( $contact['contact_cat'] ) ) {
+			return $contact['contact_cat'];
 		}
 		return array();
 	}
@@ -342,12 +337,17 @@ class WontrapiHelp {
 	 */
 	public static function get_count( $data ) {
 		$count = 0;
-		$data = self::get_data_from_response( $data );
+
+		if ( is_string( $data ) ) {
+			$data = self::get_data_from_response( $data );
+		}
 
 		if ( !$data )
 			return $count;
 
-		if ( isset( $data['count'] ) ) {
+		if ( is_object( $data ) && isset( $data->count ) ) {
+			return $data->count;
+		} elseif ( is_array( $data ) && isset( $data['count'] ) ) {
 			return $data['count'];
 		}
 
@@ -367,19 +367,21 @@ class WontrapiHelp {
 	 * independent of object type.
 	 * 
 	 * @param  str|int $type  Required - Object type (not for Custom Objects). Converts to objectID.
-	 * @return array          Array of meta
-	 * @uses   WontrapiGo::get_object_meta()
+	 * @return obj            Object with name (string) and fields (object)
 	 * @link   https://api.ontraport.com/doc/#retrieve-object-meta OP API Documentation
 	 * @author github.com/oakwoodgates 
 	 * @since  0.5.0 Initial 
 	 */
-	public static function get_objects_meta( $type, $response ) {
-		$number = WontrapiHelp::objectID( $type );
-		$response = WontrapiHelp::get_data_from_response( $response );
-		if ( isset( $response[$number] ) ) {
-			return $response[$number];
+	public static function get_object_meta( $type, $response ) {
+		//$response = WontrapiHelp::get_data_from_response( $response );
+		if ( is_string( $response ) ) {
+			$response = json_decode( $response );
 		}
-		return array();
+		$number = WontrapiHelp::objectID( $type );
+		if ( isset( $response->data->{$number} ) ) {
+			return $response->data->{$number};
+		}
+		return 0;
 	}
 
 	/**
@@ -650,6 +652,51 @@ class WontrapiHelp {
 	 * @since  0.4.0 Deprecated - Use get_data_from_response()
 	 */
 	public static function get_object_from_response( $response, $all = false, $array = false ) {
+		/* v2
+		if ( is_string( $response ) ) {
+			$response = json_decode( $response, true );
+		} 
+
+		if ( !empty( $response['data'] ) ) {
+			$data = $response['data'];
+			// return typical response from popular objects first (contact & transactions) 
+			if ( !empty( $data['id'] ) ) {
+				return $data;
+			// from updating a contact or object
+			} elseif ( !empty( $data['attrs'] ) ) {
+				return $data['attrs'];
+			} elseif ( is_array( $data ) ) {
+				if ( is_numeric( key( $data ) ) ) {
+					if ( !empty( $data[0]['id'] ) || !empty( $data[0]['form_id'] ) ) {
+						// multiple contacts or objects
+						if ( $all ) {
+							return $data;
+						} else {
+							return $data[0];
+						}
+					} else {
+						// from retrieve object meta
+					//	return reset( $data );						
+					//	@todo make function for getting retrieve object meta data
+						return $data;						
+					}
+				} else {
+					// not formatted like popular objects, or from creating fields and sections
+					return $data;
+				}
+			} else {
+				// we have a string response
+				return $data;
+			}
+		} else {
+			if ( !empty( $response['id'] ) )
+				return $response;
+			return 0;
+		}
+		return 0;
+		*/
+
+		/* v1 */
 		if( is_string( $response ) ) {
 			$response = json_decode( $response, $array );
 		} else {
