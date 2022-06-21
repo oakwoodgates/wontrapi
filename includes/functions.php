@@ -26,24 +26,28 @@
  */
 
 
+function wontrapi_get_options() {
+	return Wontrapi_Core::get_options();
+}
+
 /**
  * Get single option from options page
  * @param  string $key [description]
  * @return [type]      [description]
  */
 function wontrapi_get_option( $key = '' ) {
-	if ( function_exists( 'cmb2_get_option' ) ) {
-		return cmb2_get_option( 'wontrapi_options', $key );
-	} else {
-		$options = get_option( 'wontrapi_options' );
-		return $options[$key];
-	}
+	return Wontrapi_Core::get_option( $key );
 }
+
+
 
 function wontrapi_get_data( $response, $all = false ) {
 	return WontrapiHelp::get_data_from_response( $response, $all );
 }
 
+function wontrapi_get_id( $response ) {
+	return WontrapiHelp::get_id_from_response( $response );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,29 +61,21 @@ function wontrapi_get_data( $response, $all = false ) {
  * Get a user's Contact_ID from OP (stored in user_meta)
  */
 function wontrapi_get_opuid( $user_id = 0 ) {
-	return get_user_meta( $user_id, 'won_cid', true );
+	return Wontrapi_Core::get_user_contact_id_from_meta( $user_id );
 }
 
 /**
  * Store user's OP Contact_ID in meta
  */
-function wontrapi_update_opuid( $user_id = 0, $opuid = 0 ) {
-	return update_user_meta( $user_id, 'won_cid', $opuid );
+function wontrapi_update_opuid( $user_id = 0, $contact_id = 0 ) {
+	return Wontrapi_Core::update_user_contact_id_meta( $user_id, $contact_id );
 }
 
 /**
  * Delete a user's OP Contact_ID from user_meta
  */
 function wontrapi_delete_opuid( $user_id = 0 ) {
-	return delete_user_meta( $user_id, 'won_cid' );
-}
-
-function wontrapi_get_website_subscriber_id( $user_id ) {
-	return get_user_meta( $user_id, 'won_wsid', true );
-}
-
-function wontrapi_update_website_subscriber_id( $user_id, $ws_id ) {
-	return update_user_meta( $user_id, 'won_wsid', $ws_id );
+	return Wontrapi_Core::delete_user_contact_id_meta( $user_id );
 }
 
 
@@ -90,68 +86,50 @@ function wontrapi_update_website_subscriber_id( $user_id, $ws_id ) {
  * GET CONTACTS
  */
 
+/**
+ * Get contacts from OP by userID in WP
+ */
+function wontrapi_get_contact_by_user_id( $user_id = 0 ) {
+	return Wontrapi_Core::get_contact_by_user_id( $user_id );
+}
+
 
 /**
  * Get a contact from OP
  * 
  * @param  string $email A valid email address
- * @return str|false     JSON string or false (bool)
+ * @return arr|false     Array or false (bool)
  */
 function wontrapi_get_contact_by_contact_id( $contact_id = 0 ) {
-	$contact = WontrapiGo::get_contact( $contact_id );
-	return ( WontrapiHelp::get_id_from_response( $contact ) ) ? $contact : false;
+	return Wontrapi_Core::get_contact_by_contact_id( $contact_id );
 }
 
 /**
  * Get a contact from OP by email
  *
- * If successful, will return array of contacts within the data object
- * of the json response.
+ * If successful, will return single contact 
  * 
  * @param  string    $email A valid email address
- * @return str|false        JSON string or false 
+ * @return arr|false        Array or false 
  */
-function wontrapi_get_contacts_by_email( $email = '' ) {
-	$contacts = WontrapiGo::get_contacts_by_email( $email );
-	return ( WontrapiHelp::get_id_from_response( $contacts ) ) ? $contacts : false;
+function wontrapi_get_contact_by_email( $email = '' ) {
+	return Wontrapi_Core::get_contact_by_email( $email );
 }
+
 
 /**
- * Get contacts from OP by userID in WP
+ * Get all contacts from OP by email
+ *
+ * If successful, will return array of contacts.
+ * 
+ * @param  string    $email A valid email address
+ * @return arr|false        Array or false 
  */
-function wontrapi_get_contacts_by_user_id( $user_id = 0 ) {
-	$contact = false;
-	$contact_id = wontrapi_get_opuid( $user_id );
-
-	// try to get by contact_id
-	if ( $contact_id ) {
-		$contact = wontrapi_get_contact_by_contact_id( $contact_id );
-		// check that our local contact_id's user wasn't deleted or merged in OP
-		if ( $contact ) {
-			return $contact;
-		} else {
-			wontrapi_delete_opuid( $user_id ); // false contact_id
-		}
-	}
-
-	// try to get by email
-	$user = get_user_by( 'id', $user_id );
-	if ( $user ) {
-		$contact = wontrapi_get_contacts_by_email( $user->user_email ); 
-	//	$contact = WontrapiGo::get_contacts_by_email( $email );
-		$ids = WontrapiHelp::get_ids_from_response( $contact );
-		// do we have a contact?
-		if ( $ids ) {
-			// don't update contact_id in database if multiple contacts found in OP
-			if ( ! isset( $ids[1] ) ) {
-				wontrapi_update_opuid( $user_id, $ids[0] );
-			}
-			return $contact;
-		}
-	}
-
-	return $contact;
+function wontrapi_get_contacts_by_email( $email = '' ) {
+	return Wontrapi_Core::get_contact_by_email( $email, true );
 }
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -200,26 +178,26 @@ function wontrapi_update_contact() {
  * @param  array  		$args       [description]
  * @return [type]                   [description]
  */
-function wontrapi_add_tag_to_contact( $contact_id, $tag_ids ) {
+function wontrapi_add_tag_to_contact( $contact_id = 0, $tag_ids = [] ) {
 	return WontrapiGo::tag( $contact_id, $tag_ids );
 }
 
-function wontrapi_remove_tag_from_contact( $contact_id, $tag_ids ) {
+function wontrapi_remove_tag_from_contact( $contact_id = 0, $tag_ids = [] ) {
 	return WontrapiGo::untag( $contact_id, $tag_ids );
 }
 
-function wontrapi_add_tag_to_user( $user_id, $tag_ids ) {
-	$contact = wontrapi_get_contacts_by_user_id( $user_id ); 
-	$contact_id = WontrapiHelp::get_id_from_response( $contact );
+function wontrapi_add_tag_to_user( $user_id = 0, $tag_ids = [] ) {
+	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+	$contact_id = wontrapi_get_id( $contact );
 	if ( $contact_id ) {
 		return wontrapi_add_tag_to_contact( $contact_id, $tag_ids );
 	} 
 	return 0;
 }
 
-function wontrapi_remove_tag_from_user( $user_id, $tag_ids ) {
-	$contact = wontrapi_get_contacts_by_user_id( $user_id ); 
-	$contact_id = WontrapiHelp::get_id_from_response( $contact );
+function wontrapi_remove_tag_from_user( $user_id = 0, $tag_ids = [] ) {
+	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+	$contact_id = wontrapi_get_id( $contact );
 	if ( $contact_id ) {
 		return wontrapi_remove_tag_from_contact( $contact_id, $tag_ids );
 	} 
@@ -244,8 +222,8 @@ function wontrapi_remove_contact_from_sequence( $contact_id, $sequence_ids ) {
 }
 
 function wontrapi_add_user_to_sequence( $user_id, $sequence_ids ) {
-	$contact = wontrapi_get_contacts_by_user_id( $user_id ); 
-	$contact_id = WontrapiHelp::get_id_from_response( $contact );
+	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+	$contact_id = wontrapi_get_id( $contact );
 	if ( $contact_id ) {
 		return wontrapi_add_contact_to_sequence( $contact_id, $sequence_ids );
 	} 
@@ -253,8 +231,8 @@ function wontrapi_add_user_to_sequence( $user_id, $sequence_ids ) {
 }
 
 function wontrapi_remove_user_from_sequence( $user_id, $sequence_ids ) {
-	$contact = wontrapi_get_contacts_by_user_id( $user_id ); 
-	$contact_id = WontrapiHelp::get_id_from_response( $contact );
+	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+	$contact_id = wontrapi_get_id( $contact );
 	if ( $contact_id ) {
 		return wontrapi_remove_contact_from_sequence( $contact_id, $sequence_ids );
 	} 
@@ -279,8 +257,8 @@ function wontrapi_remove_contact_from_campaign( $contact_id, $campaign_ids ) {
 }
 
 function wontrapi_add_user_to_campaign( $user_id, $campaign_ids ) {
-	$contact = wontrapi_get_contacts_by_user_id( $user_id ); 
-	$contact_id = WontrapiHelp::get_id_from_response( $contact );
+	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+	$contact_id = wontrapi_get_id( $contact );
 	if ( $contact_id ) {
 		return wontrapi_add_contact_to_campaign( $contact_id, $campaign_ids );
 	} 
@@ -288,8 +266,8 @@ function wontrapi_add_user_to_campaign( $user_id, $campaign_ids ) {
 }
 
 function wontrapi_remove_user_from_campaign( $user_id, $campaign_ids ) {
-	$contact = wontrapi_get_contacts_by_user_id( $user_id ); 
-	$contact_id = WontrapiHelp::get_id_from_response( $contact );
+	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+	$contact_id = wontrapi_get_id( $contact );
 	if ( $contact_id ) {
 		return wontrapi_remove_contact_from_campaign( $contact_id, $campaign_ids );
 	} 
