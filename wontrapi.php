@@ -163,6 +163,22 @@ final class Wontrapi {
 	protected $actions;
 
 	/**
+	 * Instance of Wontrapi_Core
+	 *
+	 * @since 0.4.0
+	 * @var Wontrapi_Core
+	 */
+	protected $core;
+
+	/**
+	 * Instance of Wontrapi_User
+	 *
+	 * @since 0.4.0
+	 * @var Wontrapi_User
+	 */
+	protected $user;
+
+	/**
 	 * Creates or returns an instance of this class.
 	 *
 	 * @since   0.3.0
@@ -194,9 +210,11 @@ final class Wontrapi {
 	 */
 	public function plugin_classes() {
 		$this->go = WontrapiGo::init( $this->id, $this->key );
+		$this->core = new Wontrapi_Core( $this );
+		require( self::dir( 'includes/functions.php' ) );
 		$this->options = new Wontrapi_Options( $this );
 		$this->actions = new Wontrapi_Actions( $this );
-		$this->cache = new Wontrapi_Cache( $this );
+		$this->user = new Wontrapi_User( $this );
 	} // END OF PLUGIN CLASSES FUNCTION
 
 	/**
@@ -209,7 +227,7 @@ final class Wontrapi {
 	 * @since  0.3.0
 	 */
 	public function hooks() {
-		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'init', [ $this, 'init' ], 0 );
 	}
 
 	/**
@@ -257,8 +275,6 @@ final class Wontrapi {
 		$this->include_dependencies();
 		// Initialize plugin classes.
 		$this->plugin_classes();
-		require( self::dir( 'includes/functions.php' ) );
-		require( self::dir( 'includes/user.php' ) );
 	}
 
 	/**
@@ -315,7 +331,7 @@ final class Wontrapi {
 	}
 
 	public function ontraport_keys() {
-		$data = get_option( 'wontrapi_options' );
+		$data = get_option( 'wontrapi_options', [] );
 		$this->id = ( !empty( $data['api_appid'] ) ) ? $data['api_appid'] : 0;
 		$this->key = ( !empty( $data['api_key'] ) ) ? $data['api_key'] : 0;
 	}
@@ -324,9 +340,9 @@ final class Wontrapi {
 		require( self::dir( 'vendor/CMB2/init.php' ) );
 		require( self::dir( 'vendor/WontrapiGo/WontrapiGo.php' ) );
 		// Init Freemius.
-		wontrapi_fs();
+		// wontrapi_fs();
 		// Signal that SDK was initiated.
-		do_action( 'wontrapi_fs_loaded' );
+		// do_action( 'wontrapi_fs_loaded' );
 	}
 
 	/**
@@ -375,8 +391,9 @@ final class Wontrapi {
 			case 'options':
 			case 'go':
 			case 'actions':
-			case 'cache':
-				return $this->$field;
+			case 'core':
+			case 'user':
+						return $this->$field;
 			default:
 				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
 		}
@@ -445,6 +462,7 @@ add_action( 'plugins_loaded', array( wontrapi(), 'hooks' ) );
 register_activation_hook( __FILE__, array( wontrapi(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wontrapi(), '_deactivate' ) );
 
+// Create a helper function for easy SDK access.
 function wontrapi_fs() {
 	global $wontrapi_fs;
 
@@ -453,20 +471,29 @@ function wontrapi_fs() {
 		require_once dirname(__FILE__) . '/vendor/freemius/start.php';
 
 		$wontrapi_fs = fs_dynamic_init( array(
-			'id' 				=> '1284',
-			'slug' 				=> 'wontrapi',
-			'type' 				=> 'plugin',
-			'public_key' 		=> 'pk_f3f99e224cd062ba9d7fda46ab973',
-			'is_premium' 		=> false,
-			'has_addons'		=> false,
-			'has_paid_plans'	=> false,
-			'is_org_compliant'	=> false,
-			'menu' 				=> array(
-				'slug' 		=> 'wontrapi_options',
-				'support' 	=> false,
+			'id'                  => '1284',
+			'slug'                => 'wontrapi',
+			'premium_slug'        => 'wontrapi',
+			'type'                => 'plugin',
+			'public_key'          => 'pk_f3f99e224cd062ba9d7fda46ab973',
+			'is_premium'          => true,
+			'is_premium_only'     => true,
+			'has_addons'          => true,
+			'has_paid_plans'      => true,
+			'menu'                => array(
+				'slug'           => 'wontrapi_options',
+				'support'        => false,
 			),
+			// Set the SDK to work in a sandbox mode (for development & testing).
+			// IMPORTANT: MAKE SURE TO REMOVE SECRET KEY BEFORE DEPLOYMENT.
+			'secret_key'          => 'sk_6F<=kdQb(Kx6[vbHSb)kp3E3KBo4d',
 		) );
 	}
 
 	return $wontrapi_fs;
 }
+
+// Init Freemius.
+wontrapi_fs();
+// Signal that SDK was initiated.
+do_action( 'wontrapi_fs_loaded' );
