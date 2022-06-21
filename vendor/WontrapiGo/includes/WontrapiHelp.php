@@ -123,6 +123,10 @@ class WontrapiHelp {
 			$response = json_decode( $response, true );
 		} 
 
+		if ( !empty( $response['id'] ) ) {
+			return $response;
+		}
+
 		if ( !empty( $response['data'] ) ) {
 			$data = $response['data'];
 			// return typical response from popular objects first (contact & transactions) 
@@ -153,6 +157,14 @@ class WontrapiHelp {
 			} else {
 				// we have a string response
 				return $data;
+			}
+		} elseif( is_numeric( key( $response ) ) ) {
+			if ( $all ) {
+				return $response;
+			} elseif ( !empty( $response[0] ) ) {
+				return $response[0];
+			} else {
+				return 0;
 			}
 		} else {
 			return 0;
