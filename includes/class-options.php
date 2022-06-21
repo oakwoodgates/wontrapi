@@ -132,7 +132,7 @@ class Wontrapi_Options {
 
 		$cmb->add_field( array(
 			'name' => 'API Settings',
-			'desc' => 'Creates the connection in Ontraport. For information on obtaining an API key, <a href="https://support.ontraport.com/hc/en-us/articles/217882248-API-in-ONTRAPORT#how-to-obtain-an-api-key" target="_blank">click here</a>.',
+			'desc' => 'Creates the connection in Ontraport. For information on obtaining an API key, <a href="https://app.ontraport.com/#!/api_settings/listAll" target="_blank">click here</a>.',
 			'type' => 'title',
 			'id'   => 'wiki_test_title'
 		) );
@@ -169,7 +169,9 @@ class Wontrapi_Options {
 		} elseif ( isset( $options['ping_value'] ) ) {
 			$ping_value = $options['ping_value'];
 		} else {
-			$ping_value = wp_generate_password( 12, false, false );
+			$ping_value = wp_generate_password( 24, false, false );
+			$options['ping_value'] = $ping_value;
+			update_option( $this->plugin->slug, $options );
 		}
 
 		$cmb->add_field( array(
@@ -196,7 +198,7 @@ class Wontrapi_Options {
 */
 		$cmb->add_field( array(
 			'name' => 'Ontraport Tracking Script',
-			'desc' => 'To enable tracking, copy and paste the full script below. To obtain the script, <a href="https://support.ontraport.com/hc/en-us/articles/217882408-Web-Page-Tracking" target="_blank">click here for intructions</a>',
+			'desc' => 'To enable tracking, copy and paste the full script below. To obtain the script, <a href="https://app.ontraport.com/#!/account/view&components_pane_nav_tabs=Developer+Preferences+and+Resources" target="_blank">click here for intructions</a>',
 			'type' => 'title',
 			'id'   => 'wiki_test_title2'
 		) );
