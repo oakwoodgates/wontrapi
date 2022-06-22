@@ -79,6 +79,10 @@ class Wontrapi_Core {
 		return WontrapiHelp::get_data_from_response( $data, $all );
 	}
 
+	public static function get_id( $data ) {
+		return WontrapiHelp::get_id_from_response( $data );
+	}
+
 	/**
 	 * Get a user's Contact_ID from OP (stored in user_meta)
 	 */
@@ -110,9 +114,13 @@ class Wontrapi_Core {
 			return false;
 
 		$data = self::get_data( $data, false );
+		$contact_id = self::get_id( $data );
 
-		if ( ! empty( $data ) ) {
+		if ( $contact_id ) {
+			// set transient
 			$transient_set = set_transient( self::$transient_prefix . $user_id, $data, 1800 );
+			// keep user meta fresh
+			self::update_user_contact_id_meta( $user_id, $contact_id );
 
 			if ( $transient_set ) {
 				return $data;
@@ -168,8 +176,8 @@ class Wontrapi_Core {
 							self::update_user_contact_id_meta( $user_id, $ids[0] );
 						}
 						$contact = self::get_data( $contact, false );
-					}
-				}
+					} 
+				} 
 			}
 			// set transient
 			if ( $contact ) {
@@ -194,17 +202,48 @@ class Wontrapi_Core {
 
 		if ( filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
 			$contacts = WontrapiGo::get_contacts_by_email( $email );
-			return self::get_data( $contacts, $all );
+			$data = self::get_data( $contacts, $all );
+			$user_id = email_exists( $email );
+			if ( !empty( $data ) && $user_id ) {
+				self::set_user_transient( $user_id, $data );
+			} elseif ( empty( $data ) ) {
+				// create contact in OP?
+				// probably not
+			}
+
+			return $data;
 		} 
 
 		return false;
 	}
 
 	/**
+	 * Creates or updates a contact given an email. 
+	 */
+	public static function add_or_update_contact( $email = '', $args = [] ) {
+
+		$user_id = email_exists( $email );
+
+		$contact_data = apply_filters( 'wontrapi_pre_add_or_update_contact', $args, $email, $user_id );
+
+		$response = WontrapiGo::create_or_update_contact( $email, $contact_data );
+
+		$data = self::get_data( $response );
+		$contact_id = self::get_id( $data );
+
+		if ( $contact_id && $user_id ) {
+			self::set_user_transient( $user_id, $data );
+		}
+	
+		do_action( 'wontrapi_contact_added_or_updated', $contact_id, $data, $email, $user_id );
+
+		return $data;
+	}
+
+	/**
 	 * This function is where we register our routes for our endpoint.
 	 */
 	function register_post_route() {
-		// register_rest_route() handles more arguments but we are going to stick to the basics for now.
 		register_rest_route( 'wontrapi/v1', '/post', array(
 			// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
 			'methods'  => 'POST',
@@ -224,10 +263,9 @@ class Wontrapi_Core {
 			return rest_ensure_response( 'No value in options' );
 		}
 
-		$ping_key = ( !empty( $data['ping_key'] ) ) ? $data['ping_key'] : 'wontrapi_key';
 		$ping_val = $data['ping_value'];
-		if ( isset( $_POST["$ping_key"] ) ) {
-			if ( $_POST["$ping_key"] == $ping_val ) {
+		if ( isset( $_POST['wontrapi_key'] ) ) {
+			if ( $_POST['wontrapi_key'] == $ping_val ) {
 				if ( isset( $_POST['wontrapi_action'] ) ) {
 					$actions = $_POST['wontrapi_action'];
 					$actions = explode(',', $actions);
