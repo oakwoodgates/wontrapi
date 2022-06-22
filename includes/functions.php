@@ -40,7 +40,6 @@ function wontrapi_get_option( $key = '' ) {
 }
 
 
-
 function wontrapi_get_data( $response, $all = false ) {
 	return WontrapiHelp::get_data_from_response( $response, $all );
 }
@@ -53,7 +52,7 @@ function wontrapi_get_id( $response ) {
 
 
 /**
- * CONTACT_ID and the DATABASE
+ * CONTACT and the DATABASE
  */
 
 
@@ -78,6 +77,17 @@ function wontrapi_delete_opuid( $user_id = 0 ) {
 	return Wontrapi_Core::delete_user_contact_id_meta( $user_id );
 }
 
+function wontrapi_get_user_transient( $user_id = 0 ) {
+	return Wontrapi_Core::get_user_transient( $user_id );
+}
+
+function wontrapi_set_user_transient( $user_id = 0, $contact_data ) {
+	return Wontrapi_Core::set_user_transient( $user_id, $contact_data );
+}
+
+function wontrapi_delete_user_transient( $user_id = 0 ) {
+	return Wontrapi_Core::delete_user_transient( $user_id );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +97,21 @@ function wontrapi_delete_opuid( $user_id = 0 ) {
  */
 
 /**
- * Get contacts from OP by userID in WP
+ * Get user's contact ID
+ */
+function wontrapi_get_user_contact_id( $user_id = 0 ) {
+	$contact_id = wontrapi_get_opuid( $user_id );
+
+	if ( ! $contact_id ) {
+		$contact = wontrapi_get_contact_by_user_id( $user_id ); 
+		$contact_id = wontrapi_get_id( $contact );
+	}
+	return $contact_id;
+}
+
+
+/**
+ * Get a contact from OP by userID in WP
  */
 function wontrapi_get_contact_by_user_id( $user_id = 0 ) {
 	return Wontrapi_Core::get_contact_by_user_id( $user_id );
@@ -103,6 +127,7 @@ function wontrapi_get_contact_by_user_id( $user_id = 0 ) {
 function wontrapi_get_contact_by_contact_id( $contact_id = 0 ) {
 	return Wontrapi_Core::get_contact_by_contact_id( $contact_id );
 }
+
 
 /**
  * Get a contact from OP by email
@@ -136,47 +161,57 @@ function wontrapi_get_contacts_by_email( $email = '' ) {
 
 
 /**
- * ADD CONTACTS
+ * ADD or UPDATE CONTACTS
  */
 
 
-function wontrapi_add_or_update_contact( $email = '', $args = array() ) {
-
-	$response = WontrapiGo::create_or_update_contact( $email, $args );
-
-	$contact_id = WontrapiHelp::get_id_from_response( $response );
-	$user_id = email_exists( $email );
-
-	if ( $contact_id && $user_id ) {
-		wontrapi_update_opuid( $user_id, $contact_id );
-	}
-
-	return $response;
+function wontrapi_add_or_update_contact( $email = '', $contact_data = [] ) {
+	return Wontrapi_Core::add_or_update_contact( $email, $contact_data );
 }
-
-function wontrapi_add_contact() {
-	
-}
-
-function wontrapi_update_contact() {
-	
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
 
 /**
- * TAG CONTACTS and USERS
+ * ADD/REMOVE TAGS, SEQUENCES, CAMPAIGNS to/from USERS
  */
 
+function wontrapi_add_user_to( $user_id = 0, $ids = [], $item = 'tag' ) {
+
+	$contact_id = wontrapi_get_user_contact_id( $user_id );
+
+	if ( $contact_id ) {
+		switch ( $item ) {
+			case 'tag':
+				return wontrapi_add_tag_to_contact( $contact_id, $ids );
+			case 'sequence':
+				return wontrapi_add_contact_to_sequence( $contact_id, $ids );
+			case 'campaign':
+				return wontrapi_add_contact_to_campaign( $contact_id, $ids );
+		}
+	} 
+	return 0;
+}
+
+function wontrapi_remove_user_from( $user_id = 0, $ids = [], $item = 'tag' ) {
+
+	$contact_id = wontrapi_get_user_contact_id( $user_id );
+
+	if ( $contact_id ) {
+		switch ( $item ) {
+			case 'tag':
+				return wontrapi_remove_tag_from_contact( $contact_id, $ids );
+			case 'sequence':
+				return wontrapi_remove_contact_from_sequence( $contact_id, $ids );
+			case 'campaign':
+				return wontrapi_remove_contact_from_sequence( $contact_id, $ids );
+		}
+	} 
+	return 0;
+}
 
 /**
- * [wontrapi_add_tag_to_contact description]
- * @param  int|str|arr 	$contact_id [description]
- * @param  int|str|arr 	$tag_id     [description]
- * @param  array  		$args       [description]
- * @return [type]                   [description]
+ * ADD/REMOVE CONTACTS to/from TAGS
  */
 function wontrapi_add_tag_to_contact( $contact_id = 0, $tag_ids = [] ) {
 	return WontrapiGo::tag( $contact_id, $tag_ids );
@@ -186,32 +221,10 @@ function wontrapi_remove_tag_from_contact( $contact_id = 0, $tag_ids = [] ) {
 	return WontrapiGo::untag( $contact_id, $tag_ids );
 }
 
-function wontrapi_add_tag_to_user( $user_id = 0, $tag_ids = [] ) {
-	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
-	$contact_id = wontrapi_get_id( $contact );
-	if ( $contact_id ) {
-		return wontrapi_add_tag_to_contact( $contact_id, $tag_ids );
-	} 
-	return 0;
-}
-
-function wontrapi_remove_tag_from_user( $user_id = 0, $tag_ids = [] ) {
-	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
-	$contact_id = wontrapi_get_id( $contact );
-	if ( $contact_id ) {
-		return wontrapi_remove_tag_from_contact( $contact_id, $tag_ids );
-	} 
-	return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 
 /**
- * ADD/REMOVE CONTACTS and USERS to/from SEQUENCES
+ * ADD/REMOVE CONTACTS to/from SEQUENCES
  */
-
 
 function wontrapi_add_contact_to_sequence( $contact_id, $sequence_ids ) {
 	return WontrapiGo::add_to_sequence( $contact_id, $sequence_ids );
@@ -221,30 +234,9 @@ function wontrapi_remove_contact_from_sequence( $contact_id, $sequence_ids ) {
 	return WontrapiGo::remove_from_sequence( $contact_id, $sequence_ids );
 }
 
-function wontrapi_add_user_to_sequence( $user_id, $sequence_ids ) {
-	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
-	$contact_id = wontrapi_get_id( $contact );
-	if ( $contact_id ) {
-		return wontrapi_add_contact_to_sequence( $contact_id, $sequence_ids );
-	} 
-	return 0;
-}
-
-function wontrapi_remove_user_from_sequence( $user_id, $sequence_ids ) {
-	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
-	$contact_id = wontrapi_get_id( $contact );
-	if ( $contact_id ) {
-		return wontrapi_remove_contact_from_sequence( $contact_id, $sequence_ids );
-	} 
-	return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 
 /**
- * ADD/REMOVE CONTACTS and USERS to/from CAMPAIGNS
+ * ADD/REMOVE CONTACTS to/from CAMPAIGNS
  */
 
 
@@ -256,20 +248,3 @@ function wontrapi_remove_contact_from_campaign( $contact_id, $campaign_ids ) {
 	return WontrapiGo::unsubscribe( $contact_id, $campaign_ids );
 }
 
-function wontrapi_add_user_to_campaign( $user_id, $campaign_ids ) {
-	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
-	$contact_id = wontrapi_get_id( $contact );
-	if ( $contact_id ) {
-		return wontrapi_add_contact_to_campaign( $contact_id, $campaign_ids );
-	} 
-	return 0;
-}
-
-function wontrapi_remove_user_from_campaign( $user_id, $campaign_ids ) {
-	$contact = wontrapi_get_contact_by_user_id( $user_id ); 
-	$contact_id = wontrapi_get_id( $contact );
-	if ( $contact_id ) {
-		return wontrapi_remove_contact_from_campaign( $contact_id, $campaign_ids );
-	} 
-	return 0;
-}
