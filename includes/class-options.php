@@ -155,36 +155,6 @@ class Wontrapi_Options {
 			)
 		) );
 
-		$cmb->add_field( array(
-			'name' => 'Within Ontraport',
-			'desc' => 'This is a title description',
-			'type' => 'title',
-			'id'   => 'wiki_test_title1'
-		) );
-
-		$options = get_option( $this->plugin->slug, array() );
-	//	$ping_value = ( !empty( $options['ping_value'] ) ) ? $options['ping_value'] : rand();
-		if ( isset( $_POST['ping_value'] ) ) {
-			$ping_value = $_POST['ping_value'];
-		} elseif ( isset( $options['ping_value'] ) ) {
-			$ping_value = $options['ping_value'];
-		} else {
-			$ping_value = wp_generate_password( 24, false, false );
-			$options['ping_value'] = $ping_value;
-			update_option( $this->plugin->slug, $options );
-		}
-
-		$cmb->add_field( array(
-			'name'    => __( 'Ping Key Value', 'wontrapi' ),
-			'id'      => 'ping_value',
-			'default' => $ping_value,
-			'type'    => 'text_medium',
-			'desc'    => __( '<br/>This value is used as a password when sending data from Ontraport to your website. <br/>Only use letters and/or numbers. <br/>When creating a Rule that will ping this website, include a parameter like this: <br/>wontrapi_key='.$ping_value, 'wontrapi' ),
-			'attributes'  => array(
-				'required'    => 'required',
-			)
-		) );
-
 /*		$cmb->add_field( array(
 			'name'    => __( 'Section Title', 'wontrapi' ),
 			'id'      => 'section_title', 
