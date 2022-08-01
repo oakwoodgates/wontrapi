@@ -48,7 +48,6 @@ class Wontrapi_Core {
 	 */
 	public function hooks() {
 		add_action( 'wp_footer',     [ $this, 'tracking_script' ] );
-		add_action( 'rest_api_init', [ $this, 'register_post_route' ] );
 	}
 
 	function tracking_script() {
@@ -240,46 +239,21 @@ class Wontrapi_Core {
 		return $data;
 	}
 
-	/**
-	 * This function is where we register our routes for our endpoint.
+		/**
+	 * Creates or updates a contact given an email. 
 	 */
-	function register_post_route() {
-		register_rest_route( 'wontrapi/v1', '/post', array(
-			// By using this constant we ensure that when the WP_REST_Server changes our readable endpoints will work as intended.
-			'methods'  => 'POST',
-			// Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-			'callback' => 'Wontrapi_Core::do_post_endpoint',
-		) );
+	public static function update_contact( $contact_id = 0, $args = [] ) {
+
+		$contact_data = apply_filters( 'wontrapi_pre_update_contact', $args, $email, $user_id );
+
+		$response = WontrapiGo::create_or_update_contact( $contact_id, $contact_data );
+
+		$data = self::get_data( $response );
+		$contact_id = self::get_id( $data );
+	
+		do_action( 'wontrapi_updated', $contact_id, $data );
+
+		return $data;
 	}
 
-	/**
-	 * This is our callback function that embeds our phrase in a WP_REST_Response
-	 */
-	static function do_post_endpoint() {
-
-		$data = wontrapi_get_options();
-
-		if ( empty( $data['ping_value'] ) ) {
-			return rest_ensure_response( 'No value in options' );
-		}
-
-		$ping_val = $data['ping_value'];
-		if ( isset( $_POST['wontrapi_key'] ) ) {
-			if ( $_POST['wontrapi_key'] == $ping_val ) {
-				if ( isset( $_POST['wontrapi_action'] ) ) {
-					$actions = $_POST['wontrapi_action'];
-					$actions = explode(',', $actions);
-					foreach ( $actions as $action ) {
-						$action = sanitize_key( $action );
-						// fire a specific action based on the event
-						do_action( "wontrapi_post_action_{$action}", $_POST );
-					}
-					return rest_ensure_response( 'Success!' );
-				}
-			}
-		}
-
-		// rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
-		return rest_ensure_response( 'Invalid request' );
-	}
 }
