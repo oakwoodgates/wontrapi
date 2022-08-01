@@ -239,10 +239,13 @@ class Wontrapi_Core {
 		return $data;
 	}
 
-		/**
+	/**
 	 * Creates or updates a contact given an email. 
 	 */
 	public static function update_contact( $contact_id = 0, $args = [] ) {
+
+		$email = ( !empty( $args['email'] ) ) ? $args['email'] : '';
+		$user_id = ( !empty( $email ) ) ? email_exists( $email ) : 0;
 
 		$contact_data = apply_filters( 'wontrapi_pre_update_contact', $args, $email, $user_id );
 
@@ -250,8 +253,12 @@ class Wontrapi_Core {
 
 		$data = self::get_data( $response );
 		$contact_id = self::get_id( $data );
-	
-		do_action( 'wontrapi_updated', $contact_id, $data );
+
+		if ( $contact_id && $user_id ) {
+			self::set_user_transient( $user_id, $data );
+		}
+
+		do_action( 'wontrapi_updated', $contact_id, $data, $email, $user_id );
 
 		return $data;
 	}
