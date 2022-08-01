@@ -169,6 +169,10 @@ function wontrapi_add_or_update_contact( $email = '', $contact_data = [] ) {
 	return Wontrapi_Core::add_or_update_contact( $email, $contact_data );
 }
 
+function wontrapi_update_contact( $contact_id = 0, $contact_data = [] ) {
+	return Wontrapi_Core::update_contact( $contact_id, $contact_data );
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 
