@@ -21,7 +21,7 @@ class Wontrapi_Core {
 	 */
 	protected $plugin = null;
 
-	public static $transient_prefix = 'wontrapi_user_';
+	public static $transient_user_prefix = 'wontrapi_user_';
 
 	public static $option_name = 'wontrapi_options';
 
@@ -105,7 +105,7 @@ class Wontrapi_Core {
 
 
 	public static function get_user_transient( $user_id ) {
-		return get_transient( self::$transient_prefix . $user_id );
+		return get_transient( self::$transient_user_prefix . $user_id );
 	}
 
 	public static function set_user_transient( $user_id = 0, $data = '' ) {
@@ -117,7 +117,7 @@ class Wontrapi_Core {
 
 		if ( $contact_id ) {
 			// set transient
-			$transient_set = set_transient( self::$transient_prefix . $user_id, $data, 1800 );
+			$transient_set = set_transient( self::$transient_user_prefix . $user_id, $data, 1800 );
 			// keep user meta fresh
 			self::update_user_contact_id_meta( $user_id, $contact_id );
 
@@ -133,7 +133,7 @@ class Wontrapi_Core {
 		if ( ! (int) $user_id )
 			return false;
 
-		return delete_transient( self::$transient_prefix . $user_id );
+		return delete_transient( self::$transient_user_prefix . $user_id );
 	}
 
 	/**
